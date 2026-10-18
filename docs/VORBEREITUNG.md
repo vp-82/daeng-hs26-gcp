@@ -130,12 +130,12 @@ Mein Kürzel: KÜRZEL
 
 Schritte:
 1. Führe `gcloud billing accounts list` aus. Es muss genau ein offenes Rechnungskonto geben. Merke dir seine ID. Gibt es keins oder mehrere, stoppe.
-2. Erstelle ein Projekt mit der ID daeng-KÜRZEL-XXXX, wobei XXXX vier zufällige Kleinbuchstaben oder Ziffern sind. Setze es als Standardprojekt.
+2. Erstelle ein Projekt mit der ID daeng-KÜRZEL-XXXX, wobei XXXX vier zufällige Kleinbuchstaben oder Ziffern sind. Setze es als Standardprojekt, auch für die Application Default Credentials.
 3. Verknüpfe das Projekt mit dem Rechnungskonto aus Schritt 1.
 4. Aktiviere diese APIs im Projekt: cloudresourcemanager, serviceusage, cloudbilling, billingbudgets, iam, storage, bigquery, run, cloudbuild, artifactregistry, cloudscheduler, logging, monitoring, datalineage, dataplex, dataform (jeweils mit .googleapis.com).
 5. Setze europe-west6 als Standardregion für Cloud Run und Compute.
-6. Erstelle für das Rechnungskonto ein Budget mit dem Namen daeng-budget über 50 USD mit Warnungen bei 50, 90 und 100 Prozent.
-7. Zeige mir zum Schluss: Projekt-ID, Projektnummer, Rechnungskonto-ID, die Liste der aktivierten APIs und das Budget.
+6. Lies mit `gcloud billing accounts describe` die Währung des Rechnungskontos (currencyCode). Erstelle für das Rechnungskonto ein Budget mit dem Namen daeng-budget über 50 in dieser Währung, mit Warnungen bei 50, 90 und 100 Prozent.
+7. Zeige mir zum Schluss: Projekt-ID, Projektnummer, Rechnungskonto-ID und Währung, die Liste der aktivierten APIs und das Budget.
 ```
 
 So sollten die Befehle ungefähr aussehen. Die IDs sind bei dir andere, die Struktur ist dieselbe:
@@ -144,20 +144,24 @@ So sollten die Befehle ungefähr aussehen. Die IDs sind bei dir andere, die Stru
 gcloud billing accounts list
 gcloud projects create daeng-KÜRZEL-XXXX --name="DAENG GCP"
 gcloud config set project daeng-KÜRZEL-XXXX
+gcloud auth application-default set-quota-project daeng-KÜRZEL-XXXX
 gcloud billing projects link daeng-KÜRZEL-XXXX --billing-account=XXXXXX-XXXXXX-XXXXXX
 gcloud services enable cloudresourcemanager.googleapis.com serviceusage.googleapis.com cloudbilling.googleapis.com billingbudgets.googleapis.com iam.googleapis.com storage.googleapis.com bigquery.googleapis.com run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com cloudscheduler.googleapis.com logging.googleapis.com monitoring.googleapis.com datalineage.googleapis.com dataplex.googleapis.com dataform.googleapis.com
 gcloud config set run/region europe-west6
 gcloud config set compute/region europe-west6
-gcloud billing budgets create --billing-account=XXXXXX-XXXXXX-XXXXXX --display-name="daeng-budget" --budget-amount=50USD --threshold-rule=percent=0.5 --threshold-rule=percent=0.9 --threshold-rule=percent=1.0
+gcloud billing accounts describe XXXXXX-XXXXXX-XXXXXX
+gcloud billing budgets create --billing-account=XXXXXX-XXXXXX-XXXXXX --display-name="daeng-budget" --budget-amount=50CHF --threshold-rule=percent=0.5 --threshold-rule=percent=0.9 --threshold-rule=percent=1.0
 ```
 
-Was die Befehle tun, in einem Satz pro Zeile: Rechnungskonto finden, Projekt anlegen, Projekt als Standard setzen, Projekt mit dem Rechnungskonto verbinden, die Dienste einschalten, die wir im Kurs brauchen (jeder Google-Cloud-Dienst ist eine API, die pro Projekt eingeschaltet wird), die Region Zürich als Standard setzen, und das Budget anlegen. Die Budget-Warnungen kommen per E-Mail an deine ZHAW-Adresse.
+Was die Befehle tun, in einem Satz pro Zeile: Rechnungskonto finden, Projekt anlegen, Projekt als Standard setzen, das Projekt auch für Programme als Standard setzen (brauchen wir in Lektion 2), Projekt mit dem Rechnungskonto verbinden, die Dienste einschalten, die wir im Kurs brauchen (jeder Google-Cloud-Dienst ist eine API, die pro Projekt eingeschaltet wird), die Region Zürich als Standard setzen, die Währung des Rechnungskontos lesen, und das Budget anlegen. Statt 50CHF steht bei dir 50USD, wenn dein Rechnungskonto in Dollar abrechnet. Die Budget-Warnungen kommen per E-Mail an deine ZHAW-Adresse. Das Budget gilt für dein ganzes Rechnungskonto, nicht nur für dieses Projekt. Das ist Absicht: Falls du aus Versehen ein zweites Projekt anlegst, warnt das Budget trotzdem.
 
 Prüfe das Ergebnis in der Cloud Console unter https://console.cloud.google.com:
 
 1. Oben links in der Projektauswahl steht dein Projekt `daeng-KÜRZEL-XXXX`.
-2. Menü **Abrechnung → Budgets und Benachrichtigungen**: das Budget `daeng-budget` über 50 USD ist da.
+2. Menü **Abrechnung → Budgets und Benachrichtigungen**: das Budget `daeng-budget` über 50 ist da.
 3. Menü **APIs und Dienste → Aktivierte APIs und Dienste**: BigQuery, Cloud Run, Cloud Storage und Dataform stehen in der Liste.
+
+In der Liste stehen mehr als die 16 angeforderten APIs. Google schaltet mit jedem Dienst Hilfs-APIs mit ein, zum Beispiel bringt BigQuery sieben weitere mit. Das ist normal und kostet nichts, solange niemand sie benutzt.
 
 ---
 
@@ -188,7 +192,8 @@ Steht am Ende READY, bist du fertig. Steht NOT READY, führe die vorgeschlagenen
 ## Wenn etwas schiefgeht
 
 - **`claude` oder `gcloud` wird nicht gefunden:** Terminal schliessen und neu öffnen. Die Installer tragen den Pfad erst für neue Terminals ein.
+- **Der Check sagt, das aktive Konto sei keine ZHAW-Adresse:** Du hast gcloud schon früher mit einem anderen Google-Konto benutzt. `gcloud config set account DEINE-ADRESSE@zhaw.ch` macht das ZHAW-Konto aktiv. Danach den Check nochmals laufen lassen.
 - **`gcloud billing accounts list` ist leer:** Der Education-Coupon ist nicht eingelöst oder du bist mit dem falschen Google-Konto eingeloggt. `gcloud auth list` zeigt dir, welches aktiv ist.
 - **Die Projekt-ID ist schon vergeben:** Projekt-IDs sind weltweit eindeutig. Sag Claude Code, es soll eine andere Zufallsendung nehmen.
-- **Permission denied beim Budget:** Die API `billingbudgets` war noch nicht aktiv, als der Befehl lief. Sag Claude Code, es soll Schritt 4 wiederholen und dann Schritt 6.
+- **Fehler beim Budget:** Entweder war die API `billingbudgets` noch nicht aktiv, als der Befehl lief (Claude Code soll Schritt 4 wiederholen und dann Schritt 6), oder die Währung stimmt nicht mit dem Rechnungskonto überein (Claude Code soll die Währung mit `gcloud billing accounts describe` prüfen und den Befehl mit dieser Währung wiederholen).
 - **Claude Code will etwas ausführen, das nicht in der Liste steht:** Nicht freigeben. Frag im Chat, warum. Das ist genau die Arbeitsweise, die wir im Kurs üben.

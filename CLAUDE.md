@@ -1,6 +1,6 @@
 # Regeln für Claude Code in diesem Repo
 
-Kurs: ZHAW Data Engineering, GCP-Lektionen. Die Person, mit der du arbeitest, hat wenig Erfahrung mit Google Cloud. Erkläre jeden Befehl in einem Satz, bevor du ihn ausführst. Antworte auf Deutsch.
+Kurs: ZHAW Data Engineering, GCP-Lektionen. Die Person, mit der du arbeitest, hat wenig Erfahrung mit Google Cloud. Erkläre jeden Befehl in einem Satz, bevor du ihn ausführst. Antworte auf Deutsch und sprich die Person mit du an.
 
 ## Abrechnung
 - Es gibt genau ein Rechnungskonto (Education-Guthaben). Benutze nur dieses.

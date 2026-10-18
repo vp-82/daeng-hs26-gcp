@@ -9,6 +9,7 @@
       "Bash(gcloud projects get-iam-policy:*)",
       "Bash(gcloud services list:*)",
       "Bash(gcloud billing accounts list:*)",
+      "Bash(gcloud billing accounts describe:*)",
       "Bash(gcloud billing projects describe:*)",
       "Bash(gcloud billing budgets list:*)",
       "Bash(gcloud storage ls:*)",
