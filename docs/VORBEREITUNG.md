@@ -44,7 +44,7 @@ Zum Einloggen startest du Claude Code einmal in einem beliebigen Ordner:
 claude
 ```
 
-Beim ersten Start öffnet sich der Browser zum Login. Welchen Claude-Account du dafür verwendest, ist dir überlassen. Danach beendest du Claude Code mit `/exit`.
+Beim ersten Start öffnet sich der Browser zum Login. Melde dich mit deinem Claude-Account an. Danach beendest du Claude Code mit `/exit`.
 
 ---
 
