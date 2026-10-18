@@ -1,11 +1,12 @@
 # Vorbereitung: Werkzeuge installieren und GCP-Projekt anlegen
 
-Erledige diese Schritte **vor** der ersten GCP-Lektion. Du brauchst etwa 40 Minuten. Am Ende hast du:
+Erledige diese Schritte **vor** der ersten GCP-Lektion. Du brauchst etwa 45 Minuten. Am Ende hast du:
 
 - Claude Code installiert und eingeloggt
 - die gcloud CLI installiert und mit deinem ZHAW-Google-Konto eingeloggt
 - das Kurs-Repo geklont und das Google-Cloud-Plugin für Claude Code installiert
 - ein Google-Cloud-Projekt mit Budget-Alarm, angelegt per Prompt
+- einen ersten Bucket, angelegt per Prompt und in der Console kontrolliert
 - einen Check, der READY sagt
 
 **Voraussetzung:** Du hast ein Google-Konto mit deiner ZHAW-Adresse und den Education-Coupon eingelöst ([Anleitung auf Moodle](https://moodle.zhaw.ch/mod/forum/discuss.php?d=209024)). Gib nirgends eine Kreditkarte ein. Alles in diesem Kurs läuft über das Education-Guthaben.
@@ -129,16 +130,16 @@ Lege mein Google-Cloud-Projekt für den Kurs an. Halte dich an diese Regeln:
 Mein Kürzel: KÜRZEL
 
 Schritte:
-1. Führe `gcloud billing accounts list` aus. Es muss genau ein offenes Rechnungskonto geben. Merke dir seine ID. Gibt es keins oder mehrere, stoppe.
+1. Führe `gcloud billing accounts list` aus. Nimm das offene Rechnungskonto mit "Education" im Namen und merke dir seine ID. Gibt es keins, stoppe. Gibt es daneben weitere offene Konten, benutze sie nicht, aber nenne sie mir, weil dort eine Kreditkarte hinterlegt sein könnte.
 2. Erstelle ein Projekt mit der ID daeng-KÜRZEL-XXXX, wobei XXXX vier zufällige Kleinbuchstaben oder Ziffern sind. Setze es als Standardprojekt, auch für die Application Default Credentials.
 3. Verknüpfe das Projekt mit dem Rechnungskonto aus Schritt 1.
 4. Aktiviere diese APIs im Projekt: cloudresourcemanager, serviceusage, cloudbilling, billingbudgets, iam, storage, bigquery, run, cloudbuild, artifactregistry, cloudscheduler, logging, monitoring, datalineage, dataplex, dataform (jeweils mit .googleapis.com).
 5. Setze europe-west6 als Standardregion für Cloud Run und Compute.
-6. Lies mit `gcloud billing accounts describe` die Währung des Rechnungskontos (currencyCode). Erstelle für das Rechnungskonto ein Budget mit dem Namen daeng-budget über 50 in dieser Währung, mit Warnungen bei 50, 90 und 100 Prozent.
+6. Lies mit `gcloud billing accounts describe` die Währung des Rechnungskontos (currencyCode). Erstelle für das Rechnungskonto ein Budget mit dem Namen daeng-budget über 50 in dieser Währung, mit Warnungen bei 50, 90 und 100 Prozent, und mit credit-types-treatment exclude-all-credits, damit das Budget den Verbrauch des Guthabens misst und nicht erst die Kosten danach.
 7. Zeige mir zum Schluss: Projekt-ID, Projektnummer, Rechnungskonto-ID und Währung, die Liste der aktivierten APIs und das Budget.
 ```
 
-So sollten die Befehle ungefähr aussehen. Die IDs sind bei dir andere, die Struktur ist dieselbe:
+Diese Befehle zeigt dir Claude Code nacheinander zur Freigabe. So würdest du sie auch von Hand eingeben. Die IDs sind bei dir andere, die Struktur ist dieselbe:
 
 ```bash
 gcloud billing accounts list
@@ -150,22 +151,42 @@ gcloud services enable cloudresourcemanager.googleapis.com serviceusage.googleap
 gcloud config set run/region europe-west6
 gcloud config set compute/region europe-west6
 gcloud billing accounts describe XXXXXX-XXXXXX-XXXXXX
-gcloud billing budgets create --billing-account=XXXXXX-XXXXXX-XXXXXX --display-name="daeng-budget" --budget-amount=50CHF --threshold-rule=percent=0.5 --threshold-rule=percent=0.9 --threshold-rule=percent=1.0
+gcloud billing budgets create --billing-account=XXXXXX-XXXXXX-XXXXXX --display-name="daeng-budget" --budget-amount=50USD --credit-types-treatment=exclude-all-credits --threshold-rule=percent=0.5 --threshold-rule=percent=0.9 --threshold-rule=percent=1.0
 ```
 
-Was die Befehle tun, in einem Satz pro Zeile: Rechnungskonto finden, Projekt anlegen, Projekt als Standard setzen, das Projekt auch für Programme als Standard setzen (brauchen wir in Lektion 2), Projekt mit dem Rechnungskonto verbinden, die Dienste einschalten, die wir im Kurs brauchen (jeder Google-Cloud-Dienst ist eine API, die pro Projekt eingeschaltet wird), die Region Zürich als Standard setzen, die Währung des Rechnungskontos lesen, und das Budget anlegen. Statt 50CHF steht bei dir 50USD, wenn dein Rechnungskonto in Dollar abrechnet. Die Budget-Warnungen kommen per E-Mail an deine ZHAW-Adresse. Das Budget gilt für dein ganzes Rechnungskonto, nicht nur für dieses Projekt. Das ist Absicht: Falls du aus Versehen ein zweites Projekt anlegst, warnt das Budget trotzdem.
+Was die Befehle tun, in einem Satz pro Zeile: Rechnungskonto finden, Projekt anlegen, Projekt als Standard setzen, das Projekt auch für Programme als Standard setzen (brauchen wir in Lektion 2), Projekt mit dem Rechnungskonto verbinden, die Dienste einschalten, die wir im Kurs brauchen (jeder Google-Cloud-Dienst ist eine API, die pro Projekt eingeschaltet wird), die Region Zürich als Standard setzen, die Währung des Rechnungskontos lesen, und das Budget anlegen. Statt 50USD steht bei dir 50CHF, wenn dein Rechnungskonto in Franken abrechnet. Die Option exclude-all-credits ist wichtig: Ohne sie zählt das Budget nur Kosten, die nach Abzug deines Guthabens übrig bleiben, und das sind null, bis das Guthaben weg ist. Mit ihr zählt es, was du vom Guthaben verbrauchst. Die Budget-Warnungen kommen per E-Mail an deine ZHAW-Adresse. Das Budget gilt für dein ganzes Rechnungskonto, nicht nur für dieses Projekt. Das ist Absicht: Falls du aus Versehen ein zweites Projekt anlegst, warnt das Budget trotzdem.
 
 Prüfe das Ergebnis in der Cloud Console unter https://console.cloud.google.com:
 
 1. Oben links in der Projektauswahl steht dein Projekt `daeng-KÜRZEL-XXXX`.
-2. Menü **Abrechnung → Budgets und Benachrichtigungen**: das Budget `daeng-budget` über 50 ist da.
+2. Menü **Abrechnung → Budgets und Benachrichtigungen**: das Budget `daeng-budget` über 50 ist da, und bei "Guthaben" ist kein Haken gesetzt.
 3. Menü **APIs und Dienste → Aktivierte APIs und Dienste**: BigQuery, Cloud Run, Cloud Storage und Dataform stehen in der Liste.
 
 In der Liste stehen mehr als die 16 angeforderten APIs. Google schaltet mit jedem Dienst Hilfs-APIs mit ein, zum Beispiel bringt BigQuery sieben weitere mit. Das ist normal und kostet nichts, solange niemand sie benutzt.
 
 ---
 
-## 5. Check
+## 5. Smoke-Test: einen Bucket anlegen
+
+Ein Bucket ist ein Ablageort für Dateien in Google Cloud Storage. Wir legen jetzt einen an, um zu prüfen, dass dein Projekt wirklich etwas erstellen darf. In Lektion 1 landen dort die Rohdaten.
+
+Füge den Prompt in Claude Code ein:
+
+```text
+Lege im Standardprojekt einen Bucket an. Name: die Projekt-ID plus "-raw", Region europe-west6, einheitlicher Zugriff auf Bucket-Ebene. Zeige mir den Befehl vorher. Danach zeige mir mit `gcloud storage ls` alle Buckets im Projekt.
+```
+
+Diesen Befehl zeigt dir Claude Code zur Freigabe:
+
+```bash
+gcloud storage buckets create gs://daeng-KÜRZEL-XXXX-raw --location=europe-west6 --uniform-bucket-level-access
+```
+
+Ein leerer Bucket kostet nichts. Prüfe in der Console: Menü **Cloud Storage → Buckets**, dein Bucket steht dort mit Standort europe-west6.
+
+---
+
+## 6. Check
 
 Füge diesen Prompt in Claude Code ein. Er ändert nichts, er liest nur:
 
@@ -176,11 +197,12 @@ Prüfe, ob meine Umgebung für den Kurs bereit ist. Führe nur lesende Befehle a
 2. gcloud auth list: genau ein aktives Konto, und es ist eine ZHAW-Adresse
 3. gcloud config get-value project, dann gcloud projects describe für dieses Projekt: es existiert
 4. gcloud billing projects describe für dieses Projekt: billingEnabled ist true
-5. gcloud billing accounts list: genau ein offenes Rechnungskonto
-6. gcloud billing budgets list für dieses Rechnungskonto: mindestens ein Budget
+5. gcloud billing accounts list: genau ein offenes Rechnungskonto mit "Education" im Namen, und das Kursprojekt hängt an diesem Konto. Weitere offene Konten sind kein FAIL, aber nenne sie im Detail mit dem Hinweis, dass dort eine Kreditkarte hinterlegt sein könnte.
+6. gcloud billing budgets list für dieses Rechnungskonto, dann gcloud billing budgets describe für daeng-budget: das Budget existiert und creditTypesTreatment ist EXCLUDE_ALL_CREDITS
 7. gcloud services list --enabled: keine dieser APIs fehlt: cloudresourcemanager, serviceusage, cloudbilling, billingbudgets, iam, storage, bigquery, run, cloudbuild, artifactregistry, cloudscheduler, logging, monitoring, datalineage, dataplex, dataform
 8. gcloud config get-value run/region: europe-west6
 9. git status: wir sind im Kurs-Repo, und die Datei CLAUDE.md existiert
+10. gcloud storage ls: es gibt genau einen Bucket, sein Name ist die Projekt-ID plus "-raw", und gcloud storage buckets describe zeigt location EUROPE-WEST6
 
 Letzte Zeile: READY oder NOT READY, mit der Anzahl FAILs.
 ```
@@ -196,4 +218,5 @@ Steht am Ende READY, bist du fertig. Steht NOT READY, führe die vorgeschlagenen
 - **`gcloud billing accounts list` ist leer:** Der Education-Coupon ist nicht eingelöst oder du bist mit dem falschen Google-Konto eingeloggt. `gcloud auth list` zeigt dir, welches aktiv ist.
 - **Die Projekt-ID ist schon vergeben:** Projekt-IDs sind weltweit eindeutig. Sag Claude Code, es soll eine andere Zufallsendung nehmen.
 - **Fehler beim Budget:** Entweder war die API `billingbudgets` noch nicht aktiv, als der Befehl lief (Claude Code soll Schritt 4 wiederholen und dann Schritt 6), oder die Währung stimmt nicht mit dem Rechnungskonto überein (Claude Code soll die Währung mit `gcloud billing accounts describe` prüfen und den Befehl mit dieser Währung wiederholen).
+- **Claude Code sagt, ein Budget-Befehl sei blockiert:** Claude Code hat eine eingebaute Sperre für Änderungen an Rechnungskonten und schlägt dir stattdessen den Befehl zum Selbst-Ausführen vor. Lies ihn, vergleiche ihn mit der Budget-Zeile aus Schritt 4, und führe ihn dann mit einem `!` davor direkt im Prompt aus. Das `!` heisst: du führst den Befehl aus, nicht Claude Code, und Claude Code sieht die Ausgabe. Danach den Check in Schritt 6 nochmals laufen lassen.
 - **Claude Code will etwas ausführen, das nicht in der Liste steht:** Nicht freigeben. Frag im Chat, warum. Das ist genau die Arbeitsweise, die wir im Kurs üben.
