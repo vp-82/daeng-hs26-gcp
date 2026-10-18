@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gcloud --version:*)",
+      "Bash(gcloud auth list:*)",
+      "Bash(gcloud config get-value:*)",
+      "Bash(gcloud config list:*)",
+      "Bash(gcloud projects describe:*)",
+      "Bash(gcloud projects get-iam-policy:*)",
+      "Bash(gcloud services list:*)",
+      "Bash(gcloud billing accounts list:*)",
+      "Bash(gcloud billing projects describe:*)",
+      "Bash(gcloud billing budgets list:*)",
+      "Bash(gcloud storage ls:*)",
+      "Bash(gcloud run jobs list:*)",
+      "Bash(gcloud run jobs describe:*)",
+      "Bash(gcloud run jobs executions list:*)",
+      "Bash(gcloud run jobs executions describe:*)",
+      "Bash(gcloud scheduler jobs list:*)",
+      "Bash(gcloud dataplex datascans list:*)",
+      "Bash(gcloud dataplex datascans jobs list:*)",
+      "Bash(bq ls:*)",
+      "Bash(bq show:*)",
+      "Bash(bq query --dry_run:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(claude --version:*)"
+    ],
+    "deny": [
+      "Bash(gcloud projects delete:*)"
+    ]
+  }
+}
