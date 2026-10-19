@@ -1,24 +1,33 @@
 # Regelwerk für den Dataplex-Data-Quality-Scan trips-quality auf raw.trips.
 # In raw sind alle Spalten STRING, die Regeln prüfen deshalb nur, was ohne Typumwandlung geht.
-# Der Scan prüft die ganze Tabelle, also alle Partitionen zusammen.
+# raw.trips hält mehrere Feed-Versionen, eine pro Partition (_PARTITIONDATE). Was für eine
+# Version gelten muss, prüfen wir deshalb pro Partition, nicht über die ganze Tabelle.
 
 rules:
   # trip_id fehlt nie: ohne sie lassen sich die Halte aus stop_times keiner Fahrt zuordnen.
+  # Zeilenregel: jede Zeile gehört zu genau einer Version, darum gilt sie automatisch auch pro Version.
   - name: trip-id-not-null
     column: trip_id
     dimension: COMPLETENESS
     nonNullExpectation: {}
     threshold: 1.0
 
-  # trip_id kommt nur einmal vor: sie ist der Schlüssel, über den stop_times auf trips zeigt.
-  # Keine threshold: Eindeutigkeit wird über die ganze Tabelle geprüft, nicht Zeile für Zeile,
-  # dafür erlaubt Dataplex keine Schwelle. Die Regel besteht nur, wenn alle Werte eindeutig sind.
-  - name: trip-id-unique
-    column: trip_id
+  # trip_id ist innerhalb einer Version eindeutig: sie ist der Schlüssel, über den stop_times auf trips zeigt.
+  # Pro Version, weil dieselbe trip_id in jeder neuen Version wieder vorkommt; über die ganze Tabelle
+  # würde die Regel ab der zweiten Version fehlschlagen, obwohl die Daten in Ordnung sind.
+  # Eine SQL-Assertion besteht, wenn die Abfrage keine Zeilen liefert; jede Zeile ist ein Duplikat.
+  # Direkt auf die Tabelle statt ${data()}, damit die Pseudo-Spalte _PARTITIONDATE sicher verfügbar ist.
+  - name: trip-id-unique-per-version
     dimension: UNIQUENESS
-    uniquenessExpectation: {}
+    sqlAssertion:
+      sqlStatement: |
+        SELECT _PARTITIONDATE AS version_date, trip_id, COUNT(*) AS anzahl
+        FROM `daeng-pect-olw5.raw.trips`
+        GROUP BY version_date, trip_id
+        HAVING COUNT(*) > 1
 
   # route_id fehlt nie: ohne sie weiss man nicht, zu welcher Linie die Fahrt gehört.
+  # Zeilenregel: jede Zeile gehört zu genau einer Version, darum gilt sie automatisch auch pro Version.
   - name: route-id-not-null
     column: route_id
     dimension: COMPLETENESS
@@ -26,18 +35,24 @@ rules:
     threshold: 1.0
 
   # service_id fehlt nie: ohne sie weiss man nicht, an welchen Tagen die Fahrt verkehrt.
+  # Zeilenregel: jede Zeile gehört zu genau einer Version, darum gilt sie automatisch auch pro Version.
   - name: service-id-not-null
     column: service_id
     dimension: COMPLETENESS
     nonNullExpectation: {}
     threshold: 1.0
 
-  # Mindestens eine Million Zeilen: ein abgebrochener oder leerer Download fällt so auf,
-  # auch wenn jede einzelne Zeile für sich gültig ist. Normal sind rund 2.6 Millionen.
-  - name: min-one-million-rows
+  # Jede Version hat mindestens eine Million Zeilen: ein abgebrochener oder leerer Download fällt so auf.
+  # Pro Version, weil über die ganze Tabelle die alten Versionen eine zu kleine neue verdecken würden.
+  # Jede gelieferte Zeile ist eine Version mit zu wenig Zeilen. Normal sind rund 2.6 Millionen.
+  - name: min-one-million-rows-per-version
     dimension: VOLUME
-    tableConditionExpectation:
-      sqlExpression: COUNT(*) >= 1000000
+    sqlAssertion:
+      sqlStatement: |
+        SELECT _PARTITIONDATE AS version_date, COUNT(*) AS zeilen
+        FROM `daeng-pect-olw5.raw.trips`
+        GROUP BY version_date
+        HAVING COUNT(*) < 1000000
 
 # Ergebnisse pro Lauf und Regel nach BigQuery, damit man sie über die Zeit abfragen kann.
 postScanActions:
