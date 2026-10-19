@@ -54,6 +54,10 @@ rules:
         GROUP BY version_date
         HAVING COUNT(*) < 1000000
 
+# Letztes Ergebnis auch im Katalog veröffentlichen, damit es in der BigQuery-Console
+# direkt bei der Tabelle raw.trips im Tab Data Quality steht, ohne Abfrage auf checks.
+catalogPublishingEnabled: true
+
 # Ergebnisse pro Lauf und Regel nach BigQuery, damit man sie über die Zeit abfragen kann.
 postScanActions:
   bigqueryExport:
