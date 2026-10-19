@@ -2,7 +2,10 @@
 
 Begleitrepo zu den zwei GCP-Lektionen im Modul Data Engineering, ZHAW, HS 2026.
 
-Start: [docs/VORBEREITUNG.md](docs/VORBEREITUNG.md). Erledige die Vorbereitung vor der ersten Lektion.
+Reihenfolge:
+1. [docs/VORBEREITUNG.md](docs/VORBEREITUNG.md), vor der ersten Lektion erledigen
+2. [docs/LEKTION-1.md](docs/LEKTION-1.md), Daten rein, wiederholbar
+3. docs/LEKTION-2.md, folgt
 
 Ordner:
 - `ingest/` Cloud-Run-Job, der die Daten lädt (Lektion 1)
