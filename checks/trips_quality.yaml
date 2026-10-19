@@ -1,0 +1,45 @@
+# Regelwerk für den Dataplex-Data-Quality-Scan trips-quality auf raw.trips.
+# In raw sind alle Spalten STRING, die Regeln prüfen deshalb nur, was ohne Typumwandlung geht.
+# Der Scan prüft die ganze Tabelle, also alle Partitionen zusammen.
+
+rules:
+  # trip_id fehlt nie: ohne sie lassen sich die Halte aus stop_times keiner Fahrt zuordnen.
+  - name: trip-id-not-null
+    column: trip_id
+    dimension: COMPLETENESS
+    nonNullExpectation: {}
+    threshold: 1.0
+
+  # trip_id kommt nur einmal vor: sie ist der Schlüssel, über den stop_times auf trips zeigt.
+  # Keine threshold: Eindeutigkeit wird über die ganze Tabelle geprüft, nicht Zeile für Zeile,
+  # dafür erlaubt Dataplex keine Schwelle. Die Regel besteht nur, wenn alle Werte eindeutig sind.
+  - name: trip-id-unique
+    column: trip_id
+    dimension: UNIQUENESS
+    uniquenessExpectation: {}
+
+  # route_id fehlt nie: ohne sie weiss man nicht, zu welcher Linie die Fahrt gehört.
+  - name: route-id-not-null
+    column: route_id
+    dimension: COMPLETENESS
+    nonNullExpectation: {}
+    threshold: 1.0
+
+  # service_id fehlt nie: ohne sie weiss man nicht, an welchen Tagen die Fahrt verkehrt.
+  - name: service-id-not-null
+    column: service_id
+    dimension: COMPLETENESS
+    nonNullExpectation: {}
+    threshold: 1.0
+
+  # Mindestens eine Million Zeilen: ein abgebrochener oder leerer Download fällt so auf,
+  # auch wenn jede einzelne Zeile für sich gültig ist. Normal sind rund 2.6 Millionen.
+  - name: min-one-million-rows
+    dimension: VOLUME
+    tableConditionExpectation:
+      sqlExpression: COUNT(*) >= 1000000
+
+# Ergebnisse pro Lauf und Regel nach BigQuery, damit man sie über die Zeit abfragen kann.
+postScanActions:
+  bigqueryExport:
+    resultsTable: //bigquery.googleapis.com/projects/daeng-pect-olw5/datasets/checks/tables/trips_quality
