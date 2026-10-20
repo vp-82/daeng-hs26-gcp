@@ -1,0 +1,66 @@
+version: 2
+
+# Nur eingebaute Tests. dbt build führt sie direkt nach dem jeweiligen Modell aus; schlägt einer
+# fehl, werden die abhängigen Modelle übersprungen und der Job endet mit einem Fehler.
+# Dass stg_agency nicht leer ist, prüft tests/assert_stg_agency_not_empty.sql.
+
+models:
+  - name: stg_agency
+    description: Die Verkehrsbetriebe Luzern aus der neuesten Feed-Version, gefunden über die Variable agency_pattern.
+
+  - name: stg_routes
+    description: Die Linien der Agenturen aus stg_agency, neueste Version.
+    columns:
+      - name: route_id
+        # Schlüssel der Linie: doppelt würde jede Fahrt im Mart doppelt gezählt.
+        data_tests:
+          - unique
+          - not_null
+
+  - name: stg_trips
+    description: Die Fahrten der Linien aus stg_routes, neueste Version.
+    columns:
+      - name: trip_id
+        # Schlüssel der Fahrt: jede Zeile im Mart zählt Fahrten, also muss jede Fahrt genau einmal da sein.
+        data_tests:
+          - unique
+          - not_null
+      - name: route_id
+        # Eine Fahrt ohne bekannte Linie fiele im Mart beim Join still weg.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_routes')
+                field: route_id
+
+  - name: stg_calendar
+    description: Die Kalenderregel pro Dienst der Luzerner Fahrten, Wochentage als BOOL, Daten als DATE.
+    columns:
+      - name: service_id
+        # Ein Dienst mit zwei Regeln würde jeden Fahrtag doppelt erzeugen.
+        data_tests:
+          - unique
+          - not_null
+
+  - name: stg_calendar_dates
+    description: Die Ausnahmen vom Kalender für die Dienste der Luzerner Fahrten.
+
+  - name: int_service_dates
+    description: Eine Zeile pro Dienst und Tag, an dem er verkehrt, für window_days Tage (Standard 14) ab dem Versionsdatum.
+
+  - name: trips_per_route_day
+    description: Anzahl Fahrten pro Linie und Tag der Verkehrsbetriebe Luzern, window_days Tage (Standard 14) ab der neuesten Feed-Version.
+    # Leere Werte in diesen Spalten hiessen: ein Join oder die Version ist kaputt, die Antwort unbrauchbar.
+    columns:
+      - name: service_date
+        data_tests:
+          - not_null
+      - name: route_id
+        data_tests:
+          - not_null
+      - name: n_trips
+        data_tests:
+          - not_null
+      - name: feed_version
+        data_tests:
+          - not_null

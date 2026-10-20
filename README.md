@@ -9,7 +9,7 @@ Reihenfolge:
 
 Ordner:
 - `ingest/` Cloud-Run-Job, der die Daten lädt (Lektion 1)
-- `dataform/` Transformationen und Assertions (Lektion 2)
+- `transform/` dbt-Projekt: Staging, Mart, Tests (Lektion 2)
 - `checks/` Dataplex Data-Quality-Regeln (Lektion 1 und 2)
 - `docs/` Tutorials
 - `CLAUDE.md` Regeln für Claude Code in diesem Repo

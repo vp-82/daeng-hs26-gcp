@@ -1,0 +1,28 @@
+name: transform_gtfs
+version: "1.0.0"
+config-version: 2
+profile: transform_gtfs
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+
+vars:
+  # Trifft in raw.agency genau "Verkehrsbetriebe Luzern AG" und nicht andere Firmen mit "Luzern" im Namen.
+  # Als Variable, damit man die Pipeline für eine andere Agentur bauen kann, ohne SQL zu ändern:
+  # dbt build --vars '{agency_pattern: "%postauto%"}'
+  agency_pattern: "%verkehrsbetriebe luzern%"
+  # Wie viele Tage ab dem Versionsdatum int_service_dates ausrechnet. Die Kursfrage gilt den nächsten
+  # zwei Wochen; ein späteres Tutorial setzt das Fenster auf das ganze Fahrplanjahr.
+  window_days: 14
+
+models:
+  transform_gtfs:
+    # Tabellen statt Views: jede Schicht ist einmal berechnet, und wer sie abfragt, zahlt nicht nochmals für raw.
+    +materialized: table
+    staging:
+      +schema: staging
+    intermediate:
+      +schema: intermediate
+    marts:
+      +schema: marts

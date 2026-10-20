@@ -1,0 +1,19 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Der GTFS-Fahrplan, so wie der Ingest-Job ihn geladen hat, alle Spalten STRING, eine Partition pro Feed-Version.
+    schema: raw
+    tables:
+      - name: agency
+        description: Die Verkehrsunternehmen, eine Zeile pro Agentur.
+      - name: routes
+        description: Die Linien, eine Zeile pro Linie, mit der Agentur, die sie betreibt.
+      - name: trips
+        description: Die Fahrten, eine Zeile pro Fahrt, mit Linie und Dienst (service_id), der die Fahrtage festlegt.
+      - name: calendar
+        description: Die Regel pro Dienst, an welchen Wochentagen er zwischen start_date und end_date verkehrt.
+      - name: calendar_dates
+        description: Die Ausnahmen von der Regel, einzelne Tage, an denen ein Dienst zusätzlich (1) oder nicht (2) verkehrt.
+      - name: feed_info
+        description: Eine Zeile pro Version mit Herausgeber und Gültigkeit; wir lesen nur, welche Partition die neueste ist.

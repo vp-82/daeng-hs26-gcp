@@ -20,6 +20,6 @@ Kurs: ZHAW Data Engineering, GCP-Lektionen. Die Person, mit der du arbeitest, ha
 
 ## Ordner
 - `ingest/` Cloud-Run-Job, der die Daten lädt
-- `dataform/` Transformationen und Assertions
+- `transform/` dbt-Projekt: Staging, Mart, Tests
 - `checks/` Dataplex Data-Quality-Regeln
 - `docs/` Tutorials

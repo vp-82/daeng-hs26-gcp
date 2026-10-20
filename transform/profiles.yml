@@ -1,0 +1,13 @@
+transform_gtfs:
+  target: prod
+  outputs:
+    prod:
+      type: bigquery
+      # oauth heisst Application Default Credentials: in Cloud Run die Identität des Jobs (transform-sa),
+      # lokal dein gcloud-Login. Eine Schlüsseldatei gibt es nicht und braucht es nicht.
+      method: oauth
+      project: "{{ env_var('DBT_PROJECT') }}"
+      dataset: staging
+      # Gilt auch für die Datasets, die dbt anlegt, wenn sie fehlen.
+      location: europe-west6
+      threads: 4
