@@ -504,6 +504,10 @@ Workflows, ein Alarm, wenn etwas schiefgeht.
   Anmeldung ist abgelaufen. Im Terminal `gcloud auth login` ausführen (bei Fehlern aus
   Programmen `gcloud auth application-default login`), dann den Prompt in Claude Code
   wiederholen. Claude Code muss dafür nicht neu gestartet werden.
+- **"unrecognized arguments: --filter" bei gcloud storage buckets get-iam-policy:** Dieser
+  Befehl kennt `--filter` nicht, anders als `gcloud projects get-iam-policy`. Claude Code
+  schlägt dir den Umweg vor, die Policy ohne Filter zu lesen und mit grep zu durchsuchen.
+  Das ist richtig, lass es den Fix ausführen oder führe ihn selbst mit `!` aus.
 - **"Service account ... does not exist" beim Vergeben eines Rechts:** Der Account ist gerade
   erst angelegt, IAM kennt ihn noch nicht überall. Eine Minute warten, dann nur die
   Rechte-Befehle wiederholen.
