@@ -12,6 +12,7 @@ Kurs: ZHAW Data Engineering, GCP-Lektionen. Die Person, mit der du arbeitest, ha
 - Vor jeder BigQuery-Abfrage auf eine Tabelle, die wir nicht selbst angelegt haben: zuerst `bq query --dry_run`, und nenne die Bytes.
 - Lösche nichts ohne ausdrückliche Bestätigung in diesem Chat. Keine --quiet Flags bei Lösch-Befehlen.
 - Wenn ein Befehl fehlschlägt: zeige die Fehlermeldung, erkläre sie, schlage einen Fix vor, führe ihn nicht automatisch aus.
+- Lies den Ordner `referenz/` nur, wenn die Person es ausdrücklich verlangt.
 
 ## Projekt
 - Standardprojekt: das Ergebnis von `gcloud config get-value project`. Region: europe-west6. BigQuery-Location: europe-west6.
@@ -20,6 +21,7 @@ Kurs: ZHAW Data Engineering, GCP-Lektionen. Die Person, mit der du arbeitest, ha
 
 ## Ordner
 - `ingest/` Cloud-Run-Job, der die Daten lädt
-- `transform/` dbt-Projekt: Staging, Mart, Tests
+- `transform/` dbt-Projekt, entsteht in Lektion 2 aus transform/SPEC.md
+- `referenz/` Musterlösungen. Lies diesen Ordner nur, wenn die Person es ausdrücklich verlangt.
 - `checks/` Dataplex Data-Quality-Regeln
 - `docs/` Tutorials

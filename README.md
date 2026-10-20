@@ -9,7 +9,8 @@ Reihenfolge:
 
 Ordner:
 - `ingest/` Cloud-Run-Job, der die Daten lädt (Lektion 1)
-- `transform/` dbt-Projekt: Staging, Mart, Tests (Lektion 2)
+- `transform/` dbt-Projekt, entsteht in Lektion 2 aus `transform/SPEC.md`
+- `referenz/` Musterlösungen, zum Beispiel `referenz/transform/` (das getestete dbt-Projekt)
 - `checks/` Dataplex Data-Quality-Regeln (Lektion 1 und 2)
 - `docs/` Tutorials
 - `CLAUDE.md` Regeln für Claude Code in diesem Repo
