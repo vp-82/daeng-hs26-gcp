@@ -2,11 +2,14 @@
 
 ## Worum es geht
 
-Die Analyse ist gemacht: Wie viele Fahrten fährt jede Linie pro Tag? Das Notebook hat die
-Antwort (Tutorial zur Analyse: https://github.com/vp-82/daeng-hs26/blob/main/TUTORIAL.md,
-nicht Voraussetzung für heute). Heute geht es um die Frage, die ein Unternehmen danach
-stellt: Wie wird diese Antwort jeden Montag produziert, ohne dass jemand etwas anfasst, und
-woher wissen wir, dass sie stimmt?
+Im [Tutorial zur Datenanalyse](https://github.com/vp-82/daeng-hs26/blob/main/TUTORIAL.md)
+hast du die Frage beantwortet: Wie viele Fahrten fährt jede Linie pro Tag? Explorativ, auf
+dem Laptop, mit einer lokalen Pipeline aus DuckDB und dbt. Diese zwei Lektionen bauen
+dieselbe Pipeline noch einmal, diesmal so, wie sie in einem Unternehmen laufen würde: auf
+Google Cloud, ohne Laptop, jeden Montag von selbst, geprüft. Das ist die Frage, die ein
+Unternehmen nach der Analyse stellt: Wie wird diese Antwort produziert, ohne dass jemand
+etwas anfasst, und woher wissen wir, dass sie stimmt? Das Analyse-Tutorial ist keine
+Voraussetzung für heute, aber wer es gemacht hat, erkennt jeden Schritt wieder.
 
 Lektion 1 beantwortet die erste Hälfte. Am Ende läuft in deinem Projekt ein Job, der den
 Schweizer Fahrplan vom Publisher holt, unverändert ablegt, in BigQuery lädt, zweimal pro Woche
@@ -79,6 +82,15 @@ claude
 
 Claude Code neu starten ist nötig, damit es die neue `.claude/settings.json` liest.
 
+Die Anmeldung von gcloud läuft bei ZHAW-Konten nach einigen Stunden ab. Melde dich vor der
+Lektion neu an, dann unterbricht es dich nicht mittendrin. Beide Male öffnet sich der
+Browser, beide Male das ZHAW-Konto wählen:
+
+```bash
+gcloud auth login
+gcloud auth application-default login
+```
+
 Dein Projekt in der Console findest du über die Projektauswahl oben links, Tab **Alle**,
 unterhalb der Organisation `zhaw.ch`. In der Liste "Zuletzt verwendet" steht es erst, wenn du
 es einmal geöffnet hast. Die Console-Links in dieser Anleitung öffnen das zuletzt gewählte
@@ -106,11 +118,24 @@ Kein Prompt in diesem Schritt.
 ## 2. Den Job lesen
 
 **Warum.** Du musst den Code nicht schreiben können, aber du musst wissen, was er tut, bevor
-du ihn in der Cloud laufen lässt. Drei Entscheidungen darin sind Data Engineering, nicht
-Python: Die Zip wird unverändert abgelegt (Landing Zone, was ankam bleibt erhalten). Jede
-Feed-Version landet in einer eigenen Partition, und ein zweiter Lauf derselben Version ersetzt
-genau diese Partition. Alle Spalten bleiben Text, Typen bekommen die Daten erst in der
-Transformation, weil GTFS Zeiten wie 25:30:00 enthält.
+du ihn in der Cloud laufen lässt. Der Job macht zwei Dinge nacheinander: Er holt die Daten
+vom Publisher und legt sie im Bucket ab, und er lädt sie aus dem Bucket nach BigQuery. Die
+Trennung ist Absicht. Der Bucket hält das Original, BigQuery lässt sich daraus jederzeit neu
+füllen, ohne den Publisher nochmals zu fragen.
+
+Drei Entscheidungen im Code sind Data Engineering, nicht Python: Die Zip wird unverändert
+abgelegt (Landing Zone, was ankam bleibt erhalten). Jede Feed-Version landet in einer eigenen
+Partition, und ein zweiter Lauf derselben Version ersetzt genau diese Partition. Alle Spalten
+bleiben Text, Typen bekommen die Daten erst in der Transformation, weil GTFS Zeiten wie
+25:30:00 enthält.
+
+**Was eine Partition ist.** Eine BigQuery-Tabelle kann in Stücke geteilt sein, hier eines pro
+Tag. Jedes Stück lässt sich einzeln schreiben, ersetzen oder löschen, und eine Abfrage, die
+nach dem Datum filtert, liest nur dieses Stück und zahlt nur dafür. Unser Job legt pro
+Feed-Version eine Partition an, benannt nach dem Datum der Version. Ein zweiter Lauf
+derselben Version ersetzt genau diese Partition, eine neue Version kommt daneben zu liegen.
+Partitionen verfallen nach 90 Tagen, gerechnet ab dem Datum der Version, nicht ab dem Tag des
+Ladens.
 
 **Warum der Code schon da ist.** Damit alle denselben Job deployen und die Lektion nicht an
 fünf verschiedenen Fassungen hängt. Entstanden ist er so, wie du es in Schritt 8 mit den
@@ -397,6 +422,11 @@ mehrere Versionen, also prüfen Eindeutigkeit und Grösse pro Version, nicht üb
 Tabelle. Die Prüfung macht Dataplex, der Dienst dafür in Google Cloud. Die Ergebnisse landen
 in einer BigQuery-Tabelle und am Tab der geprüften Tabelle.
 
+Heute startest du den Scan von Hand. Von selbst warnt er niemanden, er schreibt sein Ergebnis
+in die Tabelle und an den Katalog, mehr nicht. In Lektion 2 bekommt er seinen Platz in der
+Kette: erst laden, dann prüfen, und erst wenn die Prüfung besteht, transformieren. Und ein
+Alarm, der aus einem Fehlschlag eine E-Mail macht, ist ebenfalls Lektion 2.
+
 Prompt 1:
 
 ```text
@@ -404,6 +434,9 @@ Lies checks/trips_quality.yaml und erkläre mir jede der fünf Regeln in einem S
 prüft und warum zwei davon pro Version prüfen statt über die ganze Tabelle. Dann ersetze in
 der Datei die Projekt-ID daeng-pect-olw5 überall durch meine Projekt-ID. Ändere sonst nichts.
 ```
+
+Claude Code merkt vielleicht an, dass das Dataset `checks`, auf das die Datei zeigt, in
+deinem Projekt noch nicht existiert. Stimmt, das legt Prompt 2 als Erstes an.
 
 Prompt 2:
 
@@ -467,6 +500,10 @@ Workflows, ein Alarm, wenn etwas schiefgeht.
 
 ## Wenn etwas schiefgeht
 
+- **"Reauthentication required" oder "token expired" bei einem gcloud-Befehl:** Die
+  Anmeldung ist abgelaufen. Im Terminal `gcloud auth login` ausführen (bei Fehlern aus
+  Programmen `gcloud auth application-default login`), dann den Prompt in Claude Code
+  wiederholen. Claude Code muss dafür nicht neu gestartet werden.
 - **"Service account ... does not exist" beim Vergeben eines Rechts:** Der Account ist gerade
   erst angelegt, IAM kennt ihn noch nicht überall. Eine Minute warten, dann nur die
   Rechte-Befehle wiederholen.
