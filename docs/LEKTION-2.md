@@ -573,25 +573,28 @@ zeigt einen Vorfall "gtfs-pipeline fehlgeschlagen", Bedingung "Cloud-Run-Job
 fehlgeschlagen", `job_name: ingest-gtfs`. Und eine E-Mail mit denselben Angaben und den zwei
 Sätzen aus der Richtlinie, was zu tun ist.
 
-Ein paar Minuten danach kommt eine zweite E-Mail, "Alert recovered", und der Vorfall ist
-geschlossen, obwohl du nichts repariert hast. Das klingt falsch und ist konsequent:
-Monitoring weiss nicht, ob die Pipeline in Ordnung ist. Es weiss nur, ob die Bedingung der
-Richtlinie gerade zutrifft, und die lautet "mehr als null fehlgeschlagene Executions in den
-letzten fünf Minuten". Der Fehlschlag war ein Ereignis um 18:12, kein Zustand. Fünf Minuten
-später zählt das Fenster wieder null, die Bedingung trifft nicht mehr zu, und "recovered"
-heisst genau das: Bedingung nicht mehr erfüllt, nicht Problem gelöst. Anders wäre es bei
-einem Zustand wie "Festplatte voll", da bleibt die Metrik über dem Schwellwert, bis jemand
-handelt, und der Vorfall bleibt offen. Für einen fehlgeschlagenen Job gibt es keinen
-Zustand, den die Metrik beobachten könnte. Ein längeres Fenster würde daran nichts ändern,
-nur die E-Mail verzögern und den Vorfall länger offen halten. Ein Alarm, der offen bleibt,
-bis es wieder läuft, braucht eine andere Bedingung: "keine erfolgreiche Execution seit fünf
-Tagen". Das ist ein Zustand, und er ist nicht Teil dieser Lektion. Was dich zum Handeln
-bringt, ist deshalb die erste E-Mail mit dem Runbook-Text, nicht die Tabelle der offenen
-Vorfälle. Im Team landet die
-E-Mail in einem Bereitschaftswerkzeug, in dem ein Mensch den Vorfall übernimmt und schliesst,
-unabhängig davon, was Monitoring über die Metrik sagt. Zwei E-Mails pro Vorfall, das ist
-normal. Die Tabelle unter Alerting ist danach wieder leer, "Show closed alerts" oben rechts
-zeigt ihn weiterhin.
+Ein paar Minuten danach ist der Vorfall in der Console geschlossen, obwohl du nichts
+repariert hast, und die Tabelle unter Alerting ist wieder leer ("Show closed alerts" oben
+rechts zeigt ihn weiterhin). Das klingt falsch und ist konsequent: Monitoring weiss nicht,
+ob die Pipeline in Ordnung ist. Es weiss nur, ob die Bedingung der Richtlinie gerade
+zutrifft, und die lautet "mehr als null fehlgeschlagene Executions in den letzten fünf
+Minuten". Der Fehlschlag war ein Ereignis um 18:12, kein Zustand. Fünf Minuten später zählt
+das Fenster wieder null, die Bedingung trifft nicht mehr zu, und der Vorfall geht zu.
+Geschlossen heisst hier: Bedingung nicht mehr erfüllt, nicht Problem gelöst. Anders wäre es
+bei einem Zustand wie "Festplatte voll", da bleibt die Metrik über dem Schwellwert, bis
+jemand handelt, und der Vorfall bleibt offen. Für einen fehlgeschlagenen Job gibt es keinen
+Zustand, den die Metrik beobachten könnte, und ein längeres Fenster würde nur die E-Mail
+verzögern und den Vorfall länger offen halten.
+
+Monitoring ist deshalb der Rauchmelder, nicht das Ticket. Standardmässig schickt es beim
+Schliessen eine zweite E-Mail, "Alert recovered", und die wäre eine Lüge, denn behoben ist
+nichts. Die Richtlinie stellt das ab: `notificationPrompts: [OPENED]`, eine E-Mail pro
+Vorfall, beim Öffnen. Ob es behoben ist, entscheidet, wer die E-Mail bekommt. Im Team landet
+sie über einen Webhook-Kanal in einem Ticket- oder Bereitschaftswerkzeug, und dort schliesst
+ein Mensch das Ticket, unabhängig davon, was Monitoring über die Metrik sagt. Ein Alarm, der
+in Monitoring selbst offen bleibt, bis es wieder läuft, bräuchte eine Bedingung, die ein
+Zustand ist: "keine erfolgreiche Execution seit fünf Tagen". Das ist nicht Teil dieser
+Lektion.
 
 Checkpoint: Die E-Mail ist da.
 

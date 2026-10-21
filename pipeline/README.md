@@ -7,5 +7,5 @@ Zeitplan: Der Scheduler-Job `gtfs-pipeline-schedule` startet den Workflow Montag
 Von Hand starten: `gcloud workflows run gtfs-pipeline --location=europe-west6`
 Executions mit allen Schritten: Console → Workflows → gtfs-pipeline → Executions; die einzelnen Jobs unter Cloud Run → Jobs.
 
-Alarm (`alert-policy.yaml`): E-Mail, sobald ein Cloud-Run-Job im Projekt oder der Workflow fehlschlägt; der Vorfall steht unter Monitoring → Alerting.
+Alarm (`alert-policy.yaml`): eine E-Mail, sobald ein Cloud-Run-Job im Projekt oder der Workflow fehlschlägt, keine beim Schliessen des Vorfalls (`notificationPrompts: [OPENED]`, denn geschlossen heisst nur, dass die Bedingung nicht mehr zutrifft). Der Vorfall steht unter Monitoring → Alerting.
 `CHANNEL_ID` in `alert-policy.yaml` ist ein Platzhalter und wird erst beim Anlegen der Richtlinie durch den eigenen E-Mail-Kanal ersetzt.

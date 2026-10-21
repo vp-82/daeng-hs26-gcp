@@ -57,6 +57,11 @@ conditions:
         count: 1
 
 alertStrategy:
+  # Nur beim Öffnen eines Vorfalls benachrichtigen. Monitoring schliesst den Vorfall von selbst,
+  # sobald die Bedingung nicht mehr zutrifft, und das heisst nicht, dass etwas repariert wurde.
+  # Eine "recovered"-E-Mail wäre darum irreführend. Ob es behoben ist, entscheidet ein Mensch.
+  notificationPrompts:
+    - OPENED
   # Ohne neue Fehlschläge schliesst sich der Vorfall nach 30 Minuten von selbst.
   autoClose: 1800s
 
