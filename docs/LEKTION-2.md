@@ -55,6 +55,17 @@ Das Repo hat neue Ordner (`transform/`, `referenz/`, `pipeline/`) und eine neue
 `CLAUDE.md`. Die zwei Logins, weil die Anmeldung von ZHAW-Konten nach einigen Stunden
 abläuft. Claude Code neu starten, damit es die neuen Regeln liest.
 
+Die Prompts nennen nie eine Projekt-ID. Claude Code nimmt das Projekt, das in gcloud aktiv
+ist. Prüfe vor dem Start, dass es deines ist, vor allem wenn du schon andere Google-Cloud-
+Projekte hast:
+
+```bash
+gcloud config get-value project
+```
+
+Steht dort ein anderes: `gcloud config set project daeng-KÜRZEL-XXXX` und
+`gcloud auth application-default set-quota-project daeng-KÜRZEL-XXXX`, dann erst `claude`.
+
 Wie in Lektion 1: Prompt einfügen, jeden Befehl lesen und mit der Liste vergleichen,
 freigeben, in der Console nachschauen.
 
