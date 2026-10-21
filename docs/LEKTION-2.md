@@ -459,7 +459,9 @@ Sätzen aus der Richtlinie, was zu tun ist.
 
 Ein paar Minuten danach kommt eine zweite E-Mail, "Alert recovered". Du hast nichts
 repariert, aber die Metrik zählt Fehlschläge in einem Fenster von fünf Minuten, und das
-Fenster ist weitergewandert. Zwei E-Mails pro Vorfall, das ist normal.
+Fenster ist weitergewandert. Zwei E-Mails pro Vorfall, das ist normal. Danach ist der
+Vorfall geschlossen und die Tabelle unter Alerting wieder leer. "Show closed alerts" oben
+rechts in der Tabelle zeigt ihn weiterhin.
 
 Checkpoint: Die E-Mail ist da.
 
