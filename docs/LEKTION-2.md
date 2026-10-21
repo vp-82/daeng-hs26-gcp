@@ -109,6 +109,12 @@ unterscheiden sich leicht, drei Tage Fahrplan:
 | trips | 2 596 233 | 2 601 990 |
 | stops | 104 410 | 104 831 |
 
+Console: [Cloud Storage → Buckets](https://console.cloud.google.com/storage/browser) →
+`<projekt-id>-raw` → `raw/gtfs/`: zwei Ordner, `version=20261014` und `version=20261017`,
+je neun Dateien. Das ist die Geschichte der Rohdaten, als Ordner sichtbar. In BigQuery zeigt
+`raw` → `trips` → Tab **Details** "Anzahl Partitionen: 2", manchmal erst nach ein paar Minuten.
+Die Abfrage oben ist die verlässliche Sicht.
+
 Wer diese Lektion an einem anderen Tag macht: Auf https://data.opentransportdata.swiss/dataset/timetable-2026-gtfs2020
 steht jede Version mit eigener Download-URL. Irgendeine ältere tut es.
 
@@ -118,24 +124,55 @@ Checkpoint: Zwei Partitionen pro Tabelle, die neuere ist unverändert.
 
 ## 2. Die Transformation erzeugen
 
-**Warum.** In Lektion 1 hast du den Ingest-Code gelesen, heute lässt du den Code schreiben.
-`transform/SPEC.md` ist die Spezifikation: was die Modelle tun, welche Namen und Spalten fest
-sind, was der Agent nicht tun soll, woran man sieht, dass es stimmt. Claude Code macht daraus
-ein dbt-Projekt. Die Musterlösung liegt in `referenz/transform/`, und Claude Code schaut sie
-nicht an, das steht in `CLAUDE.md`. Am Ende vergleichst du nicht den Code, sondern die Zahlen.
+**Warum.** Die Rohdaten beantworten keine Frage. Sie sind acht Tabellen voller Text, so wie der
+Publisher sie liefert. Die Transformation macht daraus eine Tabelle, die die Frage
+beantwortet. Das ist der Teil der Pipeline, in dem das Fachwissen steckt, und deshalb der Teil,
+den du heute nicht liest, sondern aus einer Spezifikation schreiben lässt.
 
-**Was dbt ist.** Ein Werkzeug, das SQL-Dateien in der richtigen Reihenfolge in BigQuery
-ausführt und danach Tests darauf laufen lässt. Jede Datei ist ein Modell, also eine Tabelle.
-`ref()` verbindet die Modelle, daraus kennt dbt die Reihenfolge. Drei Schichten: `staging`
-macht aus Text Typen und schneidet auf Luzern zu, `intermediate` rechnet aus den
-GTFS-Kalenderregeln die Fahrtage aus, `marts` zählt. Das ist das Muster aus dem
-Analyse-Tutorial, nur läuft es jetzt in BigQuery statt in DuckDB.
+**Wie eine Transformation aufgebaut ist.** Nicht in einem Schritt, sondern in drei Stufen,
+und jede Stufe ist eine eigene Tabelle:
 
-Zwei Entscheidungen in der Spezifikation sind Data Engineering: Der Mart liest immer genau
-eine Version, die neueste, weil ein Mart über mehrere Versionen jede Fahrt doppelt zählen
-würde. Und er wird bei jedem Lauf ganz ersetzt, weil die Frage "was sagt der aktuelle
-Fahrplan" lautet. Wer wissen will, wie sich die Antwort über Versionen verändert, baut daraus
-eine Snapshot-Tabelle, das ist ein anderes Tutorial.
+1. **Staging** räumt auf. Aus Text werden Zahlen und Daten, und von allem, was der Publisher
+   liefert, bleibt nur der Teil, der uns interessiert. Keine Rechnung, keine neue Information,
+   nur sauber und klein.
+2. **Intermediate** rechnet das aus, was in den Daten nur indirekt steht.
+3. **Marts** beantworten die Frage, eine Tabelle pro Frage, so gebaut, dass man sie direkt
+   abfragen oder in ein Dashboard hängen kann.
+
+Warum drei statt einer: Jede Stufe lässt sich einzeln anschauen und einzeln testen. Wenn die
+Antwort falsch ist, findet man die Stufe, in der es schiefgeht. Und eine zweite Frage morgen
+braucht nur einen zweiten Mart, Staging und Intermediate gibt es schon.
+
+**Auf unseren Fall übersetzt.** Die Frage lautet: Wie viele Fahrten fährt jede Linie der
+Verkehrsbetriebe Luzern pro Tag? Im Fahrplan steht das nirgends direkt, und das aus einem
+Grund, den jeder kennt, der SBB fährt: Der Fahrplan sagt nicht "die Linie 1 fährt am
+23. Oktober 212 Mal", er sagt "diese Fahrt verkehrt Montag bis Freitag, ausser an Feiertagen,
+und am 1. November zusätzlich". Eine Regel plus Ausnahmen, pro Fahrt. So bleibt der Fahrplan
+klein. Für unsere Frage muss man die Regel in Tage auflösen.
+
+- Staging: aus dem ganzen Schweizer Fahrplan nur die Verkehrsbetriebe Luzern, aus `"20261017"`
+  wird ein Datum, aus `"1"` wird ja.
+- Intermediate: aus "Montag bis Freitag, 14. Dezember bis 12. Dezember, ausser am 1. August" wird
+  eine Liste von Tagen, an denen die Fahrt tatsächlich fährt. Für die nächsten zwei Wochen.
+- Mart: zählen, wie viele Fahrten pro Linie und Tag übrig bleiben.
+
+**Was dbt dazu tut.** dbt ist das Werkzeug, das diese Tabellen in der richtigen Reihenfolge in
+BigQuery baut. Jede Tabelle ist eine SQL-Datei. Eine Datei verweist mit `ref()` auf die
+Tabelle, von der sie liest, und aus diesen Verweisen weiss dbt, was zuerst kommt. Danach
+laufen Tests: Ist der Schlüssel eindeutig, ist die Spalte nie leer, stimmt die Anzahl Tage im
+Fenster. Schlägt ein Test fehl, hört dbt auf.
+
+**Zwei Entscheidungen, die Data Engineering sind.** Der Mart liest immer genau eine Version,
+die neueste. Ein Mart über zwei Versionen würde jede Fahrt doppelt zählen, denn dieselbe Fahrt
+am selben Tag steht in beiden. Und der Mart wird bei jedem Lauf ganz ersetzt, weil die Frage
+"was sagt der aktuelle Fahrplan" lautet. Wer wissen will, wie sich die Antwort von Version zu
+Version verändert, baut daraus eine zweite Tabelle, die nichts wegwirft. Das ist ein anderes
+Tutorial.
+
+**Was jetzt passiert.** `transform/SPEC.md` beschreibt die drei Stufen, die Tabellen, ihre
+Spalten und die Tests. Claude Code macht daraus das dbt-Projekt. Die Musterlösung liegt in
+`referenz/transform/`, und Claude Code schaut sie nicht an, das steht in `CLAUDE.md`. Am Ende
+vergleichst du nicht den Code, sondern die Zahlen.
 
 Prompt:
 
@@ -146,9 +183,11 @@ raw.agency auf "luzern" passen. Zeige mir am Ende die Liste der Dateien und die 
 stg_agency, int_service_dates und trips_per_route_day, und warte auf mein OK.
 ```
 
-Das dauert einige Minuten. Was du beim Lesen prüfst: Filtert `stg_agency` genau eine
-Agentur? Zieht `int_service_dates` erst die Ausnahmen vom Typ 1 hinzu und dann die vom Typ 2
-ab? Hat `trips_per_route_day` eine Zeile pro `service_date` und `route_id`?
+Das dauert einige Minuten. Was du beim Lesen prüfst, ohne SQL-Kenntnisse: Steht in
+`stg_agency` ein Filter auf Luzern? Kommen in `int_service_dates` die Wörter für Regel und
+Ausnahmen vor (`calendar`, `calendar_dates`, `exception_type`), und wird erst hinzugefügt
+(Typ 1), dann weggenommen (Typ 2)? Zählt `trips_per_route_day` mit `COUNT` und gruppiert nach
+Tag und Linie?
 
 Wer vergleichen will: `diff -r referenz/transform transform` zeigt, wo deine Fassung von der
 Musterlösung abweicht. Zwei Agenten, zwei Fassungen, derselbe Mart. Das ist normal.
