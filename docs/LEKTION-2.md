@@ -199,6 +199,9 @@ Beispiel `transform-dbt` statt `transform-gtfs`, und der Workflow in Schritt 5 r
 unter dem Namen aus der Spezifikation auf. Namen sind Schnittstellen, deshalb stehen sie im
 Prompt und nicht im Ermessen des Agenten.
 
+Console: noch nichts. Schritt 2 erzeugt nur Dateien in deinem Repo. In der Cloud entsteht
+erst in Schritt 3 etwas.
+
 Checkpoint: `transform/` enthält `dbt_project.yml`, `profiles.yml`, `Dockerfile`,
 `macros/`, `models/` mit drei Unterordnern, `tests/`.
 
@@ -253,6 +256,14 @@ gcloud run jobs execute transform-gtfs --region europe-west6 --wait
 Im Log siehst du die gewählte Version, dann jedes Modell und jeden Test mit `OK`, und am Ende
 die Zusammenfassung von dbt: `Done. PASS=22 ... TOTAL=22`. Die Zahl kann bei dir leicht
 abweichen, je nachdem, wie viele Tests deine Fassung hat.
+
+Console, in dieser Reihenfolge: [IAM](https://console.cloud.google.com/iam-admin/iam) zeigt
+`transform-sa` mit zwei Rollen. Während des Builds
+[Cloud Build → Verlauf](https://console.cloud.google.com/cloud-build/builds) den laufenden
+Build, danach [Cloud Run → Jobs](https://console.cloud.google.com/run/jobs) den Job
+`transform-gtfs`, seine Execution und unter Logs die dbt-Ausgabe, Modell für Modell. Und in
+[BigQuery](https://console.cloud.google.com/bigquery) drei neue Datasets, `staging`,
+`intermediate`, `marts`, die der Job angelegt hat.
 
 Wenn dein Projekt nicht baut oder dbt mit einem Fehler endet, den du nicht in zwei Minuten
 verstehst: Musterlösung hinein und nochmals deployen. Das ist der Grund, warum sie da ist.
