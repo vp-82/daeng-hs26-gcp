@@ -177,17 +177,26 @@ vergleichst du nicht den Code, sondern die Zahlen.
 Prompt:
 
 ```text
-Lies transform/SPEC.md und setze sie vollständig in transform/ um. Schau den Ordner
-referenz/ nicht an. Prüfe vorher mit einer Abfrage (dry run zuerst), welche agency_name in
-raw.agency auf "luzern" passen. Zeige mir am Ende die Liste der Dateien und die Modelle
-stg_agency, int_service_dates und trips_per_route_day, und warte auf mein OK.
+Lies transform/SPEC.md und setze sie vollständig in transform/ um, mit allen Dateien aus
+der Spezifikation, auch Dockerfile und requirements.txt, die du lokal nicht brauchst. Schau
+den Ordner referenz/ nicht an. Prüfe vorher mit einer Abfrage (dry run zuerst), welche
+agency_name in raw.agency auf "luzern" passen. Zeige mir am Ende die Liste der Dateien
+neben der Dateiliste aus der Spezifikation und die Modelle stg_agency, int_service_dates
+und trips_per_route_day, und warte auf mein OK.
 ```
 
 Das dauert einige Minuten. Zuerst das Einfachste: Vergleiche die Dateiliste mit dem
-Checkpoint unten. Fehlt etwas, meist das `Dockerfile`, weil Claude Code es lokal nicht
-braucht, sag es ihm, bevor du OK gibst. Ohne Dockerfile gibt es in Schritt 3 keinen
-Container. Das ist die zweite Frage des Reviews aus [SPEC-IM-TEAM.md](SPEC-IM-TEAM.md): Was
-wurde weggelassen? Dann liest du, ohne SQL-Kenntnisse: Steht in
+Checkpoint unten. Das ist die zweite Frage des Reviews aus [SPEC-IM-TEAM.md](SPEC-IM-TEAM.md):
+Was wurde weggelassen? Fehlt das `Dockerfile`, weil Claude Code es lokal nicht braucht, gibt
+es in Schritt 3 keinen Container. Dann statt OK:
+
+```text
+transform/SPEC.md verlangt ein Dockerfile in transform/: python:3.12-slim, requirements
+installieren, Projekt kopieren, CMD dbt build --profiles-dir . --target prod. Leg es an
+und zeig es mir.
+```
+
+Dann liest du, ohne SQL-Kenntnisse: Steht in
 `stg_agency` ein Filter auf Luzern? Kommen in `int_service_dates` die Wörter für Regel und
 Ausnahmen vor (`calendar`, `calendar_dates`, `exception_type`), und wird erst hinzugefügt
 (Typ 1), dann weggenommen (Typ 2)? Zählt `trips_per_route_day` mit `COUNT` und gruppiert nach
