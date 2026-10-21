@@ -582,8 +582,12 @@ später zählt das Fenster wieder null, die Bedingung trifft nicht mehr zu, und 
 heisst genau das: Bedingung nicht mehr erfüllt, nicht Problem gelöst. Anders wäre es bei
 einem Zustand wie "Festplatte voll", da bleibt die Metrik über dem Schwellwert, bis jemand
 handelt, und der Vorfall bleibt offen. Für einen fehlgeschlagenen Job gibt es keinen
-Zustand, den die Metrik beobachten könnte. Was dich zum Handeln bringt, ist deshalb die erste
-E-Mail mit dem Runbook-Text, nicht die Tabelle der offenen Vorfälle. Im Team landet die
+Zustand, den die Metrik beobachten könnte. Ein längeres Fenster würde daran nichts ändern,
+nur die E-Mail verzögern und den Vorfall länger offen halten. Ein Alarm, der offen bleibt,
+bis es wieder läuft, braucht eine andere Bedingung: "keine erfolgreiche Execution seit fünf
+Tagen". Das ist ein Zustand, und er ist nicht Teil dieser Lektion. Was dich zum Handeln
+bringt, ist deshalb die erste E-Mail mit dem Runbook-Text, nicht die Tabelle der offenen
+Vorfälle. Im Team landet die
 E-Mail in einem Bereitschaftswerkzeug, in dem ein Mensch den Vorfall übernimmt und schliesst,
 unabhängig davon, was Monitoring über die Metrik sagt. Zwei E-Mails pro Vorfall, das ist
 normal. Die Tabelle unter Alerting ist danach wieder leer, "Show closed alerts" oben rechts
