@@ -629,6 +629,12 @@ SQL-Befehl ein Modell, das Fahrten pro Linie und Tag vorhersagt.
   erst eingeschaltet, Google hat den Service Agent noch nicht angelegt.
   `gcloud beta services identity create --service=workflows.googleapis.com`, dann Deploy
   wiederholen.
+- **Workflow scheitert sofort in run_ingest mit "IAM permission denied for service account
+  workflow-sa" (AuthError):** Der Service Agent von Workflows holt für `workflow-sa` ein
+  Token, und das scheitert, bevor Cloud Run überhaupt gefragt wird. Die Rechte sind richtig,
+  aber Service Agent, Account und Rollen sind wenige Minuten alt, und IAM braucht bis zu
+  sieben Minuten, bis neue Rollen überall gelten. Ein paar Minuten warten, dann
+  `gcloud workflows run gtfs-pipeline --location=europe-west6` nochmals. Nichts ändern.
 - **Workflow scheitert in run_ingest mit "Permission 'run.operations.get' denied":**
   `workflow-sa` fehlt Cloud Run Viewer auf dem Projekt. Der Ingest-Job läuft trotzdem zu
   Ende, warte das ab, dann Rolle vergeben und Workflow nochmals starten.
