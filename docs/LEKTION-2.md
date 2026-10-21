@@ -598,5 +598,9 @@ SQL-Befehl ein Modell, das Fahrten pro Linie und Tag vorhersagt.
 - **Keine E-Mail nach zehn Minuten:** Monitoring → Alerting → Vorfälle. Steht der Vorfall
   dort, ist der Kanal falsch (Adresse prüfen). Steht er nicht dort, hat die Richtlinie die
   Metrik nicht gesehen, Policy in der Console öffnen und die Bedingung prüfen.
+- **Claude Code sagt, ein Deploy sei gesperrt, und nennt den Auto-Modus:** Du bist im
+  Auto-Modus, in dem Claude Code selbst entscheidet, was läuft, und Deployments ablehnt. Die
+  Lektion geht vom Standardmodus aus, in dem du jeden Befehl freigibst. Entweder den Befehl
+  mit `!` selbst ausführen, oder zurück in den Standardmodus wechseln (`/permissions`).
 - **Claude Code will etwas ausführen, das nicht in der Liste steht:** Nicht freigeben. Frag
   im Chat, warum.
