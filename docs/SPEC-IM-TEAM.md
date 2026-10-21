@@ -16,8 +16,7 @@ flowchart LR
   CI["CI<br/>dbt build, Deploy auf Test,<br/>Smoke-Lauf, bei jedem Push"]
   MG["Merge in main<br/>Deploy auf Produktion"]
   OP["Betrieb<br/>Runbook, Alarm,<br/>Zeitplan"]
-  I --> B --> PR --> RV --> MG --> OP
-  PR --> CI --> RV
+  I --> B --> PR --> CI --> RV --> MG --> OP
   RV -. Änderung nötig, neuer Commit .-> B
   OP -. Befund, neues Issue .-> I
   subgraph K["In diesem Kurs"]
@@ -92,6 +91,49 @@ Least Privilege. Alter Scheduler-Job `ingest-gtfs-schedule` entfällt.
 
 Owner: vp · Reviewer: N. N. · Fällig: vor Lektion 2
 ```
+
+## Der Pull Request dazu
+
+Derselbe Vorgang, eine Station weiter. Die Beschreibung sagt, wie das Issue gelöst wurde und
+welche Entscheidungen dabei gefallen sind. Sie ist das, was ein Reviewer liest, bevor er den
+Code aufmacht:
+
+```markdown
+# Pipeline verketten: Workflow mit Qualitätsschranke
+
+Closes #12
+
+**Was.** Cloud Workflow `gtfs-pipeline` in `pipeline/workflow.yaml`, Alarmrichtlinie in
+`pipeline/alert-policy.yaml`, README dazu. Scheduler zeigt neu auf den Workflow, der alte
+Scheduler-Job auf den Ingest ist entfernt.
+
+**Entscheidungen.**
+- Cloud-Run-Jobs über den Workflows-Connector, der wartet auf das Ende der Execution.
+- Dataplex über die REST-API mit OAuth2, weil es für Scans keinen Connector gibt.
+  Zustand alle 15 Sekunden abfragen, höchstens 15 Minuten, dann gilt der Scan als nicht
+  bestanden.
+- Projekt und Region aus der Umgebung, die Datei enthält keine IDs.
+- `workflow-sa` mit Invoker auf den Jobs, Run Viewer auf dem Projekt (Operations hängen am
+  Projekt, nicht am Job), DataScan Editor auf dem Scan, Logs Writer.
+- Alarm metrikbasiert statt log-basiert: hängt nicht am Wortlaut einer Fehlermeldung.
+
+**Geprüft.**
+- CI grün: Deploy auf Test, Smoke-Lauf 6 min 17 s, Ergebnis-Dict mit beiden Execution-Namen.
+- Zweiter Lauf derselben Version: Mart unverändert (370 Zeilen, 60 554 Fahrten).
+- Fehlschlag ausgelöst (Ingest mit ungültiger URL): E-Mail nach 4 Minuten.
+- Nicht geprüft: Schranke geschlossen. Braucht eine Kopie des Scans mit unerfüllbarer Regel,
+  Vorschlag als Folge-Issue #14.
+
+**Worauf der Reviewer schauen sollte.** `check_gate`: Die API lässt `passed` weg, wenn es
+false ist, darum `default(..., false)`. Ist das die richtige Lesart?
+
+**Nicht Teil davon.** Retries, Parallelität, Snapshot über Versionen (siehe Issue).
+```
+
+Hier stehen die Dinge, die im Issue nicht stehen dürfen: der Connector, die 15 Sekunden, die
+Rollen. Und hier steht, was nicht geprüft wurde, als Folge-Issue, statt still zu fehlen. Ein
+Reviewer, der das liest, weiss, wo er hinschauen muss, und braucht für den Rest zehn Minuten
+statt einer Stunde.
 
 Zwei Dinge fallen auf, wenn man das Issue neben den Prompt aus der Lektion legt.
 
