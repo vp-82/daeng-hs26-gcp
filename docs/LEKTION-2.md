@@ -183,7 +183,11 @@ raw.agency auf "luzern" passen. Zeige mir am Ende die Liste der Dateien und die 
 stg_agency, int_service_dates und trips_per_route_day, und warte auf mein OK.
 ```
 
-Das dauert einige Minuten. Was du beim Lesen prüfst, ohne SQL-Kenntnisse: Steht in
+Das dauert einige Minuten. Zuerst das Einfachste: Vergleiche die Dateiliste mit dem
+Checkpoint unten. Fehlt etwas, meist das `Dockerfile`, weil Claude Code es lokal nicht
+braucht, sag es ihm, bevor du OK gibst. Ohne Dockerfile gibt es in Schritt 3 keinen
+Container. Das ist die zweite Frage des Reviews aus [SPEC-IM-TEAM.md](SPEC-IM-TEAM.md): Was
+wurde weggelassen? Dann liest du, ohne SQL-Kenntnisse: Steht in
 `stg_agency` ein Filter auf Luzern? Kommen in `int_service_dates` die Wörter für Regel und
 Ausnahmen vor (`calendar`, `calendar_dates`, `exception_type`), und wird erst hinzugefügt
 (Typ 1), dann weggenommen (Typ 2)? Zählt `trips_per_route_day` mit `COUNT` und gruppiert nach
