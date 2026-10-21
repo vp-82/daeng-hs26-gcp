@@ -53,7 +53,8 @@ claude
 
 Das Repo hat neue Ordner (`transform/`, `referenz/`, `pipeline/`) und eine neue
 `CLAUDE.md`. Die zwei Logins, weil die Anmeldung von ZHAW-Konten nach einigen Stunden
-abläuft. Claude Code neu starten, damit es die neuen Regeln liest.
+abläuft. Claude Code neu starten, damit es die neuen Regeln liest. Unter der Eingabezeile
+muss `manual mode on` stehen, sonst Shift+Tab.
 
 Die Prompts nennen nie eine Projekt-ID. Claude Code nimmt das Projekt, das in gcloud aktiv
 ist. Prüfe vor dem Start, dass es deines ist, vor allem wenn du schon andere Google-Cloud-
@@ -598,9 +599,10 @@ SQL-Befehl ein Modell, das Fahrten pro Linie und Tag vorhersagt.
 - **Keine E-Mail nach zehn Minuten:** Monitoring → Alerting → Vorfälle. Steht der Vorfall
   dort, ist der Kanal falsch (Adresse prüfen). Steht er nicht dort, hat die Richtlinie die
   Metrik nicht gesehen, Policy in der Console öffnen und die Bedingung prüfen.
-- **Claude Code sagt, ein Deploy sei gesperrt, und nennt den Auto-Modus:** Du bist im
-  Auto-Modus, in dem Claude Code selbst entscheidet, was läuft, und Deployments ablehnt. Die
-  Lektion geht vom Standardmodus aus, in dem du jeden Befehl freigibst. Entweder den Befehl
-  mit `!` selbst ausführen, oder zurück in den Standardmodus wechseln (`/permissions`).
+- **Claude Code sagt, ein Deploy sei gesperrt, und nennt den Auto-Modus:** Unter der
+  Eingabezeile steht `auto mode on`, ein zweites Modell gibt die Befehle frei statt du, und
+  es lehnt Deployments ab. Shift+Tab drücken, bis `manual mode on` steht, dann Claude Code
+  sagen, es soll den Deploy ausführen, und den Befehl freigeben. Für einen einzelnen Befehl
+  geht auch die Zeile mit `!` am Anfang, die Claude Code anbietet.
 - **Claude Code will etwas ausführen, das nicht in der Liste steht:** Nicht freigeben. Frag
   im Chat, warum.

@@ -1,5 +1,6 @@
 {
   "permissions": {
+    "defaultMode": "default",
     "allow": [
       "Bash(gcloud --version:*)",
       "Bash(gcloud auth list:*)",
