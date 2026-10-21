@@ -204,6 +204,10 @@ Prompt und nicht im Ermessen des Agenten.
 Console: noch nichts. Schritt 2 erzeugt nur Dateien in deinem Repo. In der Cloud entsteht
 erst in Schritt 3 etwas.
 
+Claude Code bietet irgendwann an, `transform/` zu committen. Nicht nötig: Das Repo gehört dem
+Kurs, pushen kannst du nicht, und deine Fassung bleibt in deinem Klon. Wer sie behalten will,
+committet lokal, das schadet nicht.
+
 Checkpoint: `transform/` enthält `dbt_project.yml`, `profiles.yml`, `Dockerfile`,
 `macros/`, `models/` mit drei Unterordnern, `tests/`.
 
