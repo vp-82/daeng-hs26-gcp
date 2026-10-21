@@ -33,10 +33,14 @@ main:
         result: ingest_execution
 
     - run_quality_scan:
+        # Für Dataplex-Scans gibt es keinen Workflows-Connector, darum direkt die REST-API.
+        # OAuth2: Workflows meldet sich als workflow-sa an, ohne Schlüssel.
         # Startet den Scan und kehrt sofort zurück; auf das Ergebnis warten wir im nächsten Schritt.
-        call: googleapis.dataplex.v1.projects.locations.dataScans.run
+        call: http.post
         args:
-          name: ${"projects/" + project + "/locations/" + location + "/dataScans/" + quality_scan}
+          url: ${"https://dataplex.googleapis.com/v1/projects/" + project + "/locations/" + location + "/dataScans/" + quality_scan + ":run"}
+          auth:
+            type: OAuth2
         result: scan_run
 
     - wait_for_scan:
@@ -47,12 +51,18 @@ main:
           range: [1, 60]
           steps:
             - get_scan_job:
-                call: googleapis.dataplex.v1.projects.locations.dataScans.jobs.get
+                call: http.get
                 args:
-                  name: ${scan_run.job.name}
-                  # FULL, sonst fehlt das Ergebnis der einzelnen Regeln.
-                  view: FULL
-                result: scan_job
+                  url: ${"https://dataplex.googleapis.com/v1/" + scan_run.body.job.name}
+                  query:
+                    # FULL, sonst fehlt das Ergebnis der einzelnen Regeln.
+                    view: FULL
+                  auth:
+                    type: OAuth2
+                result: scan_response
+            - remember_scan_job:
+                assign:
+                  - scan_job: ${scan_response.body}
             - stop_when_finished:
                 switch:
                   - condition: ${scan_job.state in ["SUCCEEDED", "FAILED", "CANCELLED"]}
@@ -103,8 +113,9 @@ main:
 
     - done:
         # Die Namen führen in Console und Logs direkt zu den einzelnen Läufen.
+        # Der Connector gibt die Operation zurück; die Execution steht darin unter response.
         return:
-          ingest_execution: ${ingest_execution.name}
+          ingest_execution: ${ingest_execution.response.name}
           scan_job: ${scan_job.name}
           passed: ${scan_job.dataQualityResult.passed}
-          transform_execution: ${transform_execution.name}
+          transform_execution: ${transform_execution.response.name}
