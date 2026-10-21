@@ -192,6 +192,13 @@ Tag und Linie?
 Wer vergleichen will: `diff -r referenz/transform transform` zeigt, wo deine Fassung von der
 Musterlösung abweicht. Zwei Agenten, zwei Fassungen, derselbe Mart. Das ist normal.
 
+Nach deinem OK schlägt Claude Code wahrscheinlich von sich aus vor, wie es weitergeht: dbt
+lokal laufen lassen, einen Job anlegen, einen Service-Account dazu. Sag nicht ja. Gib ihm
+den ersten Prompt aus Schritt 3. Der Vorschlag klingt vernünftig, aber er erfindet Namen, zum
+Beispiel `transform-dbt` statt `transform-gtfs`, und der Workflow in Schritt 5 ruft den Job
+unter dem Namen aus der Spezifikation auf. Namen sind Schnittstellen, deshalb stehen sie im
+Prompt und nicht im Ermessen des Agenten.
+
 Checkpoint: `transform/` enthält `dbt_project.yml`, `profiles.yml`, `Dockerfile`,
 `macros/`, `models/` mit drei Unterordnern, `tests/`.
 
