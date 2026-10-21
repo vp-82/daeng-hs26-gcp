@@ -7,5 +7,5 @@ Datasets (in europe-west6, dbt legt sie an): `staging` (`stg_*`, typisiert und a
 
 Dateien: `models/` (SQL und `schema.yml` mit Tests), `tests/` (eigene Tests), `macros/`, `dbt_project.yml`, `profiles.yml`, `Dockerfile`, `SPEC.md`.
 
-Lokal starten (nach `gcloud auth application-default login`):
-`cd transform && python -m venv .venv && .venv/bin/pip install -r requirements.txt && DBT_PROJECT=$(gcloud config get-value project) .venv/bin/dbt build --profiles-dir . --target prod`
+Lokal starten (nach `gcloud auth application-default login`), zuerst `cd referenz/transform`, oder `cd transform` nach dem Kopieren:
+`python -m venv .venv && .venv/bin/pip install -r requirements.txt && DBT_PROJECT=$(gcloud config get-value project) .venv/bin/dbt build --profiles-dir . --target prod`

@@ -1,0 +1,66 @@
+# Alarmrichtlinie: eine E-Mail, sobald ein Cloud-Run-Job oder der Workflow fehlschlägt.
+#
+# Beide Bedingungen zählen Fehlschläge über Metriken, die Cloud Run und Workflows von selbst
+# schreiben. Kein Log-Filter: Metriken hängen nicht am Wortlaut einer Fehlermeldung.
+# Der Workflow löst den Alarm unter Umständen doppelt aus (Job und Workflow scheitern beide);
+# das nehmen wir in Kauf, dafür fällt auch ein Job auf, den jemand von Hand gestartet hat.
+
+displayName: gtfs-pipeline fehlgeschlagen
+# ODER: jede der beiden Bedingungen allein löst den Alarm aus.
+combiner: OR
+
+documentation:
+  mimeType: text/markdown
+  content: >-
+    Öffne in der Console die fehlgeschlagene Execution, unter Cloud Run → Jobs oder unter
+    Workflows → gtfs-pipeline → Executions. Lies dort die Logs: die letzte Fehlermeldung nennt
+    den Schritt, die Datei oder die Regel, an der es gescheitert ist.
+
+conditions:
+  - displayName: Cloud-Run-Job fehlgeschlagen
+    conditionThreshold:
+      # Für alle Jobs im Projekt, nicht nur ingest-gtfs und transform-gtfs.
+      filter: >-
+        resource.type = "cloud_run_job"
+        AND metric.type = "run.googleapis.com/job/completed_task_attempt_count"
+        AND metric.labels.result = "failed"
+      aggregations:
+        - alignmentPeriod: 300s
+          perSeriesAligner: ALIGN_SUM
+          crossSeriesReducer: REDUCE_SUM
+          # Pro Job eine Zeitreihe, damit der Vorfall sagt, welcher Job gescheitert ist.
+          groupByFields:
+            - resource.label.job_name
+      comparison: COMPARISON_GT
+      thresholdValue: 0
+      # Sofort melden: schon ein einziger Fehlschlag ist ein Grund nachzusehen.
+      duration: 0s
+      trigger:
+        count: 1
+
+  - displayName: Workflow fehlgeschlagen
+    conditionThreshold:
+      filter: >-
+        resource.type = "workflows.googleapis.com/Workflow"
+        AND metric.type = "workflows.googleapis.com/finished_execution_count"
+        AND metric.labels.status = "FAILED"
+      aggregations:
+        - alignmentPeriod: 300s
+          perSeriesAligner: ALIGN_SUM
+          crossSeriesReducer: REDUCE_SUM
+          groupByFields:
+            - resource.label.workflow_id
+      comparison: COMPARISON_GT
+      thresholdValue: 0
+      duration: 0s
+      trigger:
+        count: 1
+
+alertStrategy:
+  # Ohne neue Fehlschläge schliesst sich der Vorfall nach 30 Minuten von selbst.
+  autoClose: 1800s
+
+# Platzhalter: wird beim Anlegen durch den vollen Namen des E-Mail-Kanals ersetzt
+# (projects/<projekt>/notificationChannels/<id>), damit im Repo keine ID steht.
+notificationChannels:
+  - CHANNEL_ID

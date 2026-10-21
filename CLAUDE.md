@@ -16,7 +16,7 @@ Kurs: ZHAW Data Engineering, GCP-Lektionen. Die Person, mit der du arbeitest, ha
 
 ## Projekt
 - Standardprojekt: das Ergebnis von `gcloud config get-value project`. Region: europe-west6. BigQuery-Location: europe-west6.
-- Erlaubte APIs: cloudresourcemanager, serviceusage, cloudbilling, billingbudgets, iam, storage, bigquery, run, cloudbuild, artifactregistry, cloudscheduler, logging, monitoring, datalineage, dataplex, dataform.
+- Erlaubte APIs: cloudresourcemanager, serviceusage, cloudbilling, billingbudgets, iam, storage, bigquery, run, cloudbuild, artifactregistry, cloudscheduler, logging, monitoring, datalineage, dataplex, dataform, workflows, workflowexecutions.
 - Kein Dataflow, Composer, Dataproc, Datastream, keine Compute-Engine-VMs. Wenn du meinst, eines davon sei nötig, sag es und stoppe.
 
 ## Ordner
@@ -24,4 +24,5 @@ Kurs: ZHAW Data Engineering, GCP-Lektionen. Die Person, mit der du arbeitest, ha
 - `transform/` dbt-Projekt, entsteht in Lektion 2 aus transform/SPEC.md
 - `referenz/` Musterlösungen. Lies diesen Ordner nur, wenn die Person es ausdrücklich verlangt.
 - `checks/` Dataplex Data-Quality-Regeln
+- `pipeline/` Workflow (Verkettung mit Qualitätsschranke) und Alarm
 - `docs/` Tutorials

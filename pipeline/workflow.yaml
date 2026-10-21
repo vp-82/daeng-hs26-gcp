@@ -1,0 +1,110 @@
+# Workflow gtfs-pipeline: Ingest, dann Qualitätsprüfung, dann Transformation.
+#
+# Jeder Schritt startet erst, wenn der vorige gelungen ist. Schlägt ein Schritt fehl, endet der
+# Workflow mit einem Fehler; der Alarm in alert-policy.yaml meldet das per E-Mail.
+# Keine Wiederholungen: ein Fehler soll auffallen, nicht still ein zweites Mal laufen, und der
+# Ingest könnte die signierte Download-URL ohnehin nur einmal benutzen.
+# Keine Parallelität: jeder Teil braucht das Ergebnis des vorigen.
+
+main:
+  steps:
+    - init:
+        assign:
+          # Projekt und Region liefert Workflows zur Laufzeit. So läuft dieselbe Datei in jedem
+          # Projekt der Studierenden, ohne dass jemand eine ID ändern muss.
+          - project: ${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}
+          - location: ${sys.get_env("GOOGLE_CLOUD_LOCATION")}
+          - ingest_job: "ingest-gtfs"
+          - transform_job: "transform-gtfs"
+          - quality_scan: "trips-quality"
+          # Vor der Warteschleife anlegen: was erst in einer Schleife entsteht, ist danach nicht mehr sichtbar.
+          - scan_job: null
+
+    - run_ingest:
+        # Der Connector startet den Job und wartet, bis die Execution fertig ist. Scheitert sie,
+        # wirft der Connector einen Fehler, und der Workflow endet hier: ohne neue Rohdaten
+        # hat es keinen Sinn, zu prüfen oder zu transformieren.
+        call: googleapis.run.v2.projects.locations.jobs.run
+        args:
+          name: ${"projects/" + project + "/locations/" + location + "/jobs/" + ingest_job}
+          connector_params:
+            # Der Job selbst darf 30 Minuten laufen; der Workflow wartet etwas länger.
+            timeout: 3600
+        result: ingest_execution
+
+    - run_quality_scan:
+        # Startet den Scan und kehrt sofort zurück; auf das Ergebnis warten wir im nächsten Schritt.
+        call: googleapis.dataplex.v1.projects.locations.dataScans.run
+        args:
+          name: ${"projects/" + project + "/locations/" + location + "/dataScans/" + quality_scan}
+        result: scan_run
+
+    - wait_for_scan:
+        # Alle 15 Sekunden nachfragen, höchstens 60 Mal, also 15 Minuten. Bleibt der Scan länger
+        # unfertig, lässt ihn check_gate nicht durch.
+        for:
+          value: poll
+          range: [1, 60]
+          steps:
+            - get_scan_job:
+                call: googleapis.dataplex.v1.projects.locations.dataScans.jobs.get
+                args:
+                  name: ${scan_run.job.name}
+                  # FULL, sonst fehlt das Ergebnis der einzelnen Regeln.
+                  view: FULL
+                result: scan_job
+            - stop_when_finished:
+                switch:
+                  - condition: ${scan_job.state in ["SUCCEEDED", "FAILED", "CANCELLED"]}
+                    next: break
+            - pause:
+                call: sys.sleep
+                args:
+                  seconds: 15
+
+    - check_gate:
+        # Das ist die Qualitätsschranke: schlechte Rohdaten erreichen den Mart nicht. Der Mart
+        # behält dann die letzte gute Version, statt mit fehlerhaften Daten überschrieben zu werden.
+        # SUCCEEDED heisst nur, dass der Scan gelaufen ist; ob die Regeln erfüllt sind, sagt passed.
+        # Die API lässt passed weg, wenn es false ist, darum der Standardwert false.
+        switch:
+          - condition: ${scan_job.state != "SUCCEEDED" or not(default(map.get(scan_job, ["dataQualityResult", "passed"]), false))}
+            steps:
+              - init_failed_rules:
+                  assign:
+                    - failed_rules: []
+              - collect_failed_rules:
+                  for:
+                    value: rule_result
+                    in: ${default(map.get(scan_job, ["dataQualityResult", "rules"]), [])}
+                    steps:
+                      - remember_if_failed:
+                          switch:
+                            - condition: ${not(default(map.get(rule_result, "passed"), false))}
+                              steps:
+                                - add_rule:
+                                    assign:
+                                      - failed_rules: ${list.concat(failed_rules, rule_result.rule.name)}
+              - stop_pipeline:
+                  # Der Text steht in der fehlgeschlagenen Execution und sagt, wo man suchen muss.
+                  # In einfachen Anführungszeichen, weil YAML ": " sonst als neuen Schlüssel liest.
+                  raise: '${"Qualitätsschranke geschlossen. Scan-Job " + scan_job.name + ", Zustand " + scan_job.state + ", nicht bestandene Regeln: " + json.encode_to_string(failed_rules)}'
+
+    - run_transform:
+        # Derselbe Connector wie beim Ingest. dbt build endet mit einem Fehler, wenn ein Test
+        # fehlschlägt, dann scheitert auch dieser Schritt.
+        call: googleapis.run.v2.projects.locations.jobs.run
+        args:
+          name: ${"projects/" + project + "/locations/" + location + "/jobs/" + transform_job}
+          connector_params:
+            # Der Job selbst darf 20 Minuten laufen.
+            timeout: 1800
+        result: transform_execution
+
+    - done:
+        # Die Namen führen in Console und Logs direkt zu den einzelnen Läufen.
+        return:
+          ingest_execution: ${ingest_execution.name}
+          scan_job: ${scan_job.name}
+          passed: ${scan_job.dataQualityResult.passed}
+          transform_execution: ${transform_execution.name}

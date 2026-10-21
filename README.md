@@ -12,6 +12,7 @@ Ordner:
 - `transform/` dbt-Projekt, entsteht in Lektion 2 aus `transform/SPEC.md`
 - `referenz/` Musterlösungen, zum Beispiel `referenz/transform/` (das getestete dbt-Projekt)
 - `checks/` Dataplex Data-Quality-Regeln (Lektion 1 und 2)
+- `pipeline/` Workflow (Verkettung mit Qualitätsschranke) und Alarm (Lektion 2)
 - `docs/` Tutorials
 - `CLAUDE.md` Regeln für Claude Code in diesem Repo
 - `.claude/settings.json` welche Befehle Claude Code ohne Rückfrage ausführen darf
