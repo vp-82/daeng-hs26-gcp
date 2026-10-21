@@ -278,6 +278,25 @@ Build, danach [Cloud Run → Jobs](https://console.cloud.google.com/run/jobs) de
 [BigQuery](https://console.cloud.google.com/bigquery) drei neue Datasets, `staging`,
 `intermediate`, `marts`, die der Job angelegt hat.
 
+**Was entstanden ist.** Die drei Datasets sind die drei Stufen aus Schritt 2, je eine Tabelle
+als Beispiel:
+
+- `staging.stg_trips`: eine Auswahl der Spalten von `raw.trips`, aber nur die neueste Version,
+  nur Fahrten der Verkehrsbetriebe Luzern, `direction_id` als Zahl statt Text. Filtern und
+  Typen richten, mehr tut Staging nicht. Daneben `stg_agency` mit einer einzigen Zeile: Das ist
+  der Filter, über den alle anderen Staging-Tabellen klein werden.
+- `intermediate.int_service_dates`: eine Zeile pro Dienst und Tag, an dem er fährt, für die 14
+  Tage ab Versionsdatum. Diese Tabelle gibt es im Feed nicht, sie ist aus Regel und Ausnahmen
+  ausgerechnet.
+- `marts.trips_per_route_day`: eine Zeile pro Linie und Tag mit `n_trips`. Das ist die Antwort
+  und die einzige Tabelle, die jemand ausserhalb der Pipeline abfragt.
+
+In BigQuery das Dataset aufklappen und eine Tabelle anklicken: "Schema" zeigt die Spalten,
+"Details" die Zeilenzahl, "Vorschau" die ersten Zeilen, ohne dass eine Abfrage läuft. Jede
+Tabelle trägt `feed_version`, in allen drei Stufen dieselbe. Die Spalten deiner Staging-
+Tabellen können von der Musterlösung abweichen, der Mart nicht, seine Spalten stehen in der
+Spezifikation.
+
 Wenn dein Projekt nicht baut oder dbt mit einem Fehler endet, den du nicht in zwei Minuten
 verstehst: Musterlösung hinein und nochmals deployen. Das ist der Grund, warum sie da ist.
 
