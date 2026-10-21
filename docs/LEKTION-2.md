@@ -333,7 +333,21 @@ bq query --use_legacy_sql=false \
           MIN(service_date) AS von, MAX(service_date) AS bis,
           SUM(n_trips) AS fahrten, ANY_VALUE(feed_version) AS feed_version
    FROM marts.trips_per_route_day'
+
+bq query --use_legacy_sql=false \
+  'SELECT weekday, SUM(n_trips) AS fahrten
+   FROM (
+     SELECT weekday, n_trips,
+            MOD(EXTRACT(DAYOFWEEK FROM service_date) + 5, 7) AS tag_nr
+     FROM marts.trips_per_route_day
+   )
+   GROUP BY weekday, tag_nr
+   ORDER BY tag_nr'
 ```
+
+Die zweite Abfrage braucht die Unterabfrage, weil BigQuery nicht nach einer Spalte sortieren
+kann, die nicht in der Gruppierung steht. Claude Code läuft beim ersten Versuch oft in
+diesen Fehler und korrigiert ihn selbst, das ist in Ordnung.
 
 Erwartet, mit Version 20261017 und dem Fenster 17. bis 30. Oktober:
 
