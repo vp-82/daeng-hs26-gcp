@@ -573,11 +573,21 @@ zeigt einen Vorfall "gtfs-pipeline fehlgeschlagen", Bedingung "Cloud-Run-Job
 fehlgeschlagen", `job_name: ingest-gtfs`. Und eine E-Mail mit denselben Angaben und den zwei
 Sätzen aus der Richtlinie, was zu tun ist.
 
-Ein paar Minuten danach kommt eine zweite E-Mail, "Alert recovered". Du hast nichts
-repariert, aber die Metrik zählt Fehlschläge in einem Fenster von fünf Minuten, und das
-Fenster ist weitergewandert. Zwei E-Mails pro Vorfall, das ist normal. Danach ist der
-Vorfall geschlossen und die Tabelle unter Alerting wieder leer. "Show closed alerts" oben
-rechts in der Tabelle zeigt ihn weiterhin.
+Ein paar Minuten danach kommt eine zweite E-Mail, "Alert recovered", und der Vorfall ist
+geschlossen, obwohl du nichts repariert hast. Das klingt falsch und ist konsequent:
+Monitoring weiss nicht, ob die Pipeline in Ordnung ist. Es weiss nur, ob die Bedingung der
+Richtlinie gerade zutrifft, und die lautet "mehr als null fehlgeschlagene Executions in den
+letzten fünf Minuten". Der Fehlschlag war ein Ereignis um 18:12, kein Zustand. Fünf Minuten
+später zählt das Fenster wieder null, die Bedingung trifft nicht mehr zu, und "recovered"
+heisst genau das: Bedingung nicht mehr erfüllt, nicht Problem gelöst. Anders wäre es bei
+einem Zustand wie "Festplatte voll", da bleibt die Metrik über dem Schwellwert, bis jemand
+handelt, und der Vorfall bleibt offen. Für einen fehlgeschlagenen Job gibt es keinen
+Zustand, den die Metrik beobachten könnte. Was dich zum Handeln bringt, ist deshalb die erste
+E-Mail mit dem Runbook-Text, nicht die Tabelle der offenen Vorfälle. Im Team landet die
+E-Mail in einem Bereitschaftswerkzeug, in dem ein Mensch den Vorfall übernimmt und schliesst,
+unabhängig davon, was Monitoring über die Metrik sagt. Zwei E-Mails pro Vorfall, das ist
+normal. Die Tabelle unter Alerting ist danach wieder leer, "Show closed alerts" oben rechts
+zeigt ihn weiterhin.
 
 Checkpoint: Die E-Mail ist da.
 
