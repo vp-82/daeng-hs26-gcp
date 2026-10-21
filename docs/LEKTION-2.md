@@ -466,8 +466,10 @@ gcloud workflows run gtfs-pipeline --location=europe-west6
 ```
 
 Während der sechs Minuten: [Workflows](https://console.cloud.google.com/workflows) →
-`gtfs-pipeline` → Executions, die laufende Execution öffnen. Du siehst die Schritte, wie sie
-nacheinander drankommen, und unter Logs jeden Aufruf. In der Musterlösung: Ingest 179
+`gtfs-pipeline`. Der Tab Quelle zeigt neben dem YAML ein Diagramm der Schritte, mit der
+Schleife in `wait_for_scan` und der Verzweigung in `check_gate`. Unter Executions die
+laufende Execution öffnen: Du siehst die Schritte, wie sie nacheinander drankommen, mit Dauer,
+und unter Logs jeden Aufruf. In der Musterlösung: Ingest 179
 Sekunden, Scan 153 Sekunden mit elf Abfragen im Abstand von 15 Sekunden, Transform 45
 Sekunden, zusammen 6 Minuten 17 Sekunden.
 
