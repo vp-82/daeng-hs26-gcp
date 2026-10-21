@@ -12,7 +12,7 @@ flowchart LR
   I["Issue<br/>Warum, Ergebnis, Schnittstellen,<br/>Akzeptanzkriterien"]
   B["Branch<br/>feature/pipeline-verketten<br/>abgezweigt von main"]
   PR["Pull Request<br/>Branch gegen main,<br/>Beschreibung sagt wie und warum"]
-  RV["Review<br/>Abkürzungen fangen,<br/>Fragen stellen"]
+  RV["Review<br/>Erfüllt der Code das Issue?<br/>Was wurde weggelassen?"]
   CI["CI<br/>dbt build, Deploy auf Test,<br/>Smoke-Lauf, bei jedem Push"]
   MG["Merge in main<br/>Deploy auf Produktion"]
   OP["Betrieb<br/>Runbook, Alarm,<br/>Zeitplan"]
@@ -37,11 +37,14 @@ dort anrichtet, erreicht den Betrieb erst nach den nächsten drei Stationen.
 **Der Pull Request** ist die Bitte, den Branch in `main` zu übernehmen. Er sagt, wie: Wer immer
 den Code schreibt, Mensch oder Agent, schlägt dort das Design vor und begründet es, und die
 Beschreibung verweist auf das Issue. Was in unseren Prompts unter "Nicht tun" steht, braucht
-es hier nicht: Abkürzungen fängt das Review. Verlangt das Review eine Änderung, kommt ein
+es hier nicht: Das sind die Abkürzungen, und die fängt das Review. Verlangt das Review eine Änderung, kommt ein
 weiterer Commit auf den Branch, und der Pull Request zeigt ihn automatisch.
 
-**Das Review** ist der Mensch zwischen Vorschlag und Repo. Es fragt, ob der Code das Issue
-erfüllt, nicht ob er läuft. Dass er läuft, prüft die CI.
+**Das Review** ist der Mensch zwischen Vorschlag und Repo. Es stellt zwei Fragen: Erfüllt
+der Code das Issue, und was wurde weggelassen? Die zweite fängt die Abkürzungen, die jeder
+nimmt, wenn niemand hinschaut, ein Mensch wie ein Agent: Schema raten statt angeben, eine
+Rolle auf dem Projekt statt auf dem Job, weil es ein Befehl weniger ist, ein `--quiet` beim
+Löschen. Ob der Code läuft, fragt das Review nicht. Das prüft die CI.
 
 **Die CI** ersetzt unsere AUSFÜHRUNG-Punkte. Bei jedem Push auf den Branch läuft `dbt build`
 gegen ein Test-Dataset und ein Deploy auf eine Testumgebung mit einem Smoke-Lauf, und das
