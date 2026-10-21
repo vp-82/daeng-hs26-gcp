@@ -68,8 +68,8 @@ welche Entscheidungen fest sind, weil andere Teile davon abhängen (Namen, Regio
 was der Agent nicht tun soll, und woran wir sehen, dass es geklappt hat. Der Code in
 `ingest/` ist genau so entstanden: `ingest/SPEC.md` ist der Prompt, `ingest/main.py` die
 Antwort von Claude Code, geprüft und dann ins Repo übernommen. In einem Team stünden
-dieselben vier Teile in einem Issue, mit Tests dran. Das lassen wir weg, heute geht es um die
-Pipeline.
+dieselben vier Teile in einem Issue, mit Tests dran. Wie das aussieht, steht in
+[SPEC-IM-TEAM.md](SPEC-IM-TEAM.md). Heute geht es um die Pipeline.
 
 ## Bevor es losgeht
 

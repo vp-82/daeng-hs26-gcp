@@ -133,7 +133,7 @@ Schritte:
 1. Führe `gcloud billing accounts list` aus. Nimm das offene Rechnungskonto mit "Education" im Namen und merke dir seine ID. Gibt es keins, stoppe. Gibt es daneben weitere offene Konten, benutze sie nicht, aber nenne sie mir, weil dort eine Kreditkarte hinterlegt sein könnte.
 2. Erstelle ein Projekt mit der ID daeng-KÜRZEL-XXXX, wobei XXXX vier zufällige Kleinbuchstaben oder Ziffern sind. Setze es als Standardprojekt, auch für die Application Default Credentials.
 3. Verknüpfe das Projekt mit dem Rechnungskonto aus Schritt 1.
-4. Aktiviere diese APIs im Projekt: cloudresourcemanager, serviceusage, cloudbilling, billingbudgets, iam, storage, bigquery, run, cloudbuild, artifactregistry, cloudscheduler, logging, monitoring, datalineage, dataplex, dataform (jeweils mit .googleapis.com).
+4. Aktiviere diese APIs im Projekt: cloudresourcemanager, serviceusage, cloudbilling, billingbudgets, iam, storage, bigquery, run, cloudbuild, artifactregistry, cloudscheduler, logging, monitoring, datalineage, dataplex, dataform, workflows, workflowexecutions (jeweils mit .googleapis.com).
 5. Setze europe-west6 als Standardregion für Cloud Run und Compute.
 6. Lies mit `gcloud billing accounts describe` die Währung des Rechnungskontos (currencyCode). Erstelle für das Rechnungskonto ein Budget mit dem Namen daeng-budget über 50 in dieser Währung, mit Warnungen bei 50, 90 und 100 Prozent, und mit credit-types-treatment exclude-all-credits, damit das Budget den Verbrauch des Guthabens misst und nicht erst die Kosten danach.
 7. Zeige mir zum Schluss: Projekt-ID, Projektnummer, Rechnungskonto-ID und Währung, die Liste der aktivierten APIs und das Budget.
@@ -147,7 +147,7 @@ gcloud projects create daeng-KÜRZEL-XXXX --name="DAENG GCP"
 gcloud config set project daeng-KÜRZEL-XXXX
 gcloud auth application-default set-quota-project daeng-KÜRZEL-XXXX
 gcloud billing projects link daeng-KÜRZEL-XXXX --billing-account=XXXXXX-XXXXXX-XXXXXX
-gcloud services enable cloudresourcemanager.googleapis.com serviceusage.googleapis.com cloudbilling.googleapis.com billingbudgets.googleapis.com iam.googleapis.com storage.googleapis.com bigquery.googleapis.com run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com cloudscheduler.googleapis.com logging.googleapis.com monitoring.googleapis.com datalineage.googleapis.com dataplex.googleapis.com dataform.googleapis.com
+gcloud services enable cloudresourcemanager.googleapis.com serviceusage.googleapis.com cloudbilling.googleapis.com billingbudgets.googleapis.com iam.googleapis.com storage.googleapis.com bigquery.googleapis.com run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com cloudscheduler.googleapis.com logging.googleapis.com monitoring.googleapis.com datalineage.googleapis.com dataplex.googleapis.com dataform.googleapis.com workflows.googleapis.com workflowexecutions.googleapis.com
 gcloud config set run/region europe-west6
 gcloud config set compute/region europe-west6
 gcloud billing accounts describe XXXXXX-XXXXXX-XXXXXX
@@ -164,7 +164,7 @@ Prüfe das Ergebnis in der Cloud Console unter https://console.cloud.google.com:
 2. Menü **Abrechnung → Budgets und Benachrichtigungen**: das Budget `daeng-budget` über 50 ist da, und bei "Guthaben" ist kein Haken gesetzt.
 3. Menü **APIs und Dienste → Aktivierte APIs und Dienste**: BigQuery, Cloud Run, Cloud Storage und Dataform stehen in der Liste.
 
-In der Liste stehen mehr als die 16 angeforderten APIs. Google schaltet mit jedem Dienst Hilfs-APIs mit ein, zum Beispiel bringt BigQuery sieben weitere mit. Das ist normal und kostet nichts, solange niemand sie benutzt.
+In der Liste stehen mehr als die 18 angeforderten APIs. Google schaltet mit jedem Dienst Hilfs-APIs mit ein, zum Beispiel bringt BigQuery sieben weitere mit. Das ist normal und kostet nichts, solange niemand sie benutzt.
 
 ---
 
@@ -201,7 +201,7 @@ Prüfe, ob meine Umgebung für den Kurs bereit ist. Führe nur lesende Befehle a
 4. gcloud billing projects describe für dieses Projekt: billingEnabled ist true
 5. gcloud billing accounts list: genau ein offenes Rechnungskonto mit "Education" im Namen, und das Kursprojekt hängt an diesem Konto. Weitere offene Konten sind kein FAIL, aber nenne sie im Detail mit dem Hinweis, dass dort eine Kreditkarte hinterlegt sein könnte.
 6. gcloud billing budgets list für dieses Rechnungskonto, dann gcloud billing budgets describe für daeng-budget: das Budget existiert und creditTypesTreatment ist EXCLUDE_ALL_CREDITS
-7. gcloud services list --enabled: keine dieser APIs fehlt: cloudresourcemanager, serviceusage, cloudbilling, billingbudgets, iam, storage, bigquery, run, cloudbuild, artifactregistry, cloudscheduler, logging, monitoring, datalineage, dataplex, dataform
+7. gcloud services list --enabled: keine dieser APIs fehlt: cloudresourcemanager, serviceusage, cloudbilling, billingbudgets, iam, storage, bigquery, run, cloudbuild, artifactregistry, cloudscheduler, logging, monitoring, datalineage, dataplex, dataform, workflows, workflowexecutions
 8. gcloud config get-value run/region: europe-west6
 9. git status: wir sind im Kurs-Repo, und die Datei CLAUDE.md existiert
 10. gcloud storage ls: es gibt genau einen Bucket, sein Name ist die Projekt-ID plus "-raw", und gcloud storage buckets describe zeigt location EUROPE-WEST6
