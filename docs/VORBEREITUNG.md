@@ -111,13 +111,15 @@ claude
 
 Tippe `/plugin` und prüfe, dass `google-cloud-developer` unter den installierten Plugins steht.
 
-Unter der Eingabezeile steht `manual mode on`. Das stellt das Repo in `.claude/settings.json`
-ein: Claude Code zeigt dir jeden Befehl, der etwas verändert, und wartet auf deine Freigabe.
-Ohne diese Einstellung startet Claude Code heute im Auto-Modus (`auto mode on`), in dem ein
-zweites Modell die Befehle freigibt statt du. Für den Kurs willst du das nicht, denn das Lesen
-der Befehle ist der Teil, den du lernst. Steht trotzdem `auto mode on` (zum Beispiel in VS
-Code, das die Einstellung des Repos nicht liest), drück Shift+Tab, bis `manual mode on`
-erscheint.
+Unter der Eingabezeile steht `auto mode on`. Das ist der normale Betriebsmodus von Claude
+Code, und so arbeiten wir im Kurs: Du gibst nicht jeden Befehl einzeln frei. Ein zweites
+Modell prüft jeden Befehl vor dem Ausführen und lässt durch, was zu deinem Auftrag passt. Es
+hat Grenzen: Befehle, die über den Auftrag hinausgehen oder Infrastruktur verändern, die es
+nicht kennt (ein Deploy, ein neues Recht), sperrt es manchmal. Dann sagt Claude Code, der
+Befehl sei gesperrt, zeigt ihn dir und bietet ihn mit `!` am Anfang an. Das ist der Moment,
+in dem du der Prüfer bist: Lies den Befehl, vergleiche ihn mit der Liste im Tutorial, und wenn
+er stimmt, führ ihn mit der `!`-Zeile selbst aus. Claude Code sieht das Ergebnis und macht
+weiter.
 
 Lass Claude Code offen für Schritt 4.
 
@@ -226,7 +228,7 @@ Steht am Ende READY, bist du fertig. Steht NOT READY, führe die vorgeschlagenen
 ## Wenn etwas schiefgeht
 
 - **`claude` oder `gcloud` wird nicht gefunden:** Terminal schliessen und neu öffnen. Die Installer tragen den Pfad erst für neue Terminals ein.
-- **Unter der Eingabezeile steht `auto mode on`, oder Claude Code sagt, ein Befehl sei gesperrt:** Du bist im Auto-Modus, ein zweites Modell entscheidet statt du und lehnt zum Beispiel Deployments ab. Shift+Tab drücken, bis `manual mode on` steht, dann den Prompt wiederholen. Alternative für einen einzelnen Befehl: Claude Code bietet ihn mit `!` am Anfang an, damit führst du ihn selbst aus.
+- **Claude Code sagt, ein Befehl sei gesperrt, und nennt den Auto-Modus:** Das ist die Grenze des Auto-Modus, kein Fehler. Lies den Befehl, vergleiche ihn mit der Liste, und führ ihn mit der `!`-Zeile aus, die Claude Code anbietet. Alternative: `/permissions`, Reiter "Recently denied", `r` gibt den Befehl von Hand frei. Sperrt der Auto-Modus dreimal hintereinander, pausiert er und Claude Code fragt dich wieder vor jedem Befehl.
 - **Der Check sagt, das aktive Konto sei keine ZHAW-Adresse:** Du hast gcloud schon früher mit einem anderen Google-Konto benutzt. `gcloud config set account DEINE-ADRESSE@zhaw.ch` macht das ZHAW-Konto aktiv. Danach den Check nochmals laufen lassen.
 - **`gcloud billing accounts list` ist leer:** Der Education-Coupon ist nicht eingelöst oder du bist mit dem falschen Google-Konto eingeloggt. `gcloud auth list` zeigt dir, welches aktiv ist.
 - **Die Projekt-ID ist schon vergeben:** Projekt-IDs sind weltweit eindeutig. Sag Claude Code, es soll eine andere Zufallsendung nehmen.

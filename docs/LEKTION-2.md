@@ -53,8 +53,7 @@ claude
 
 Das Repo hat neue Ordner (`transform/`, `referenz/`, `pipeline/`) und eine neue
 `CLAUDE.md`. Die zwei Logins, weil die Anmeldung von ZHAW-Konten nach einigen Stunden
-abläuft. Claude Code neu starten, damit es die neuen Regeln liest. Unter der Eingabezeile
-muss `manual mode on` stehen, sonst Shift+Tab.
+abläuft. Claude Code neu starten, damit es die neuen Regeln liest.
 
 Die Prompts nennen nie eine Projekt-ID. Claude Code nimmt das Projekt, das in gcloud aktiv
 ist. Prüfe vor dem Start, dass es deines ist, vor allem wenn du schon andere Google-Cloud-
@@ -253,6 +252,13 @@ gcloud run jobs deploy transform-gtfs --source transform --region europe-west6 \
 
 gcloud run jobs execute transform-gtfs --region europe-west6 --wait
 ```
+
+Beim Deploy kann der Auto-Modus an seine Grenze kommen: Claude Code sagt, der Befehl sei
+gesperrt, und zeigt ihn dir mit `!` am Anfang. Das ist kein Fehler, sondern das zweite Modell,
+das einen Deploy nicht selbst freigibt. Lies den Befehl, vergleiche ihn mit dem oben (Name
+`transform-gtfs`, Service-Account `transform-sa`, `DBT_PROJECT` ist dein Projekt), und führ
+ihn mit der `!`-Zeile selbst aus. Claude Code sieht das Ergebnis und macht mit dem
+`execute` weiter.
 
 Im Log siehst du die gewählte Version, dann jedes Modell und jeden Test mit `OK`, und am Ende
 die Zusammenfassung von dbt: `Done. PASS=22 ... TOTAL=22`. Die Zahl kann bei dir leicht
@@ -599,10 +605,10 @@ SQL-Befehl ein Modell, das Fahrten pro Linie und Tag vorhersagt.
 - **Keine E-Mail nach zehn Minuten:** Monitoring → Alerting → Vorfälle. Steht der Vorfall
   dort, ist der Kanal falsch (Adresse prüfen). Steht er nicht dort, hat die Richtlinie die
   Metrik nicht gesehen, Policy in der Console öffnen und die Bedingung prüfen.
-- **Claude Code sagt, ein Deploy sei gesperrt, und nennt den Auto-Modus:** Unter der
-  Eingabezeile steht `auto mode on`, ein zweites Modell gibt die Befehle frei statt du, und
-  es lehnt Deployments ab. Shift+Tab drücken, bis `manual mode on` steht, dann Claude Code
-  sagen, es soll den Deploy ausführen, und den Befehl freigeben. Für einen einzelnen Befehl
-  geht auch die Zeile mit `!` am Anfang, die Claude Code anbietet.
+- **Claude Code sagt, ein Befehl sei gesperrt, und nennt den Auto-Modus:** Das ist die
+  Grenze des Auto-Modus, kein Fehler. Lies den Befehl, vergleiche ihn mit der Liste, und führ
+  ihn mit der `!`-Zeile aus, die Claude Code anbietet. Alternative: `/permissions`, Reiter
+  "Recently denied", `r` gibt den Befehl von Hand frei. Sperrt der Auto-Modus dreimal
+  hintereinander, pausiert er und Claude Code fragt dich wieder vor jedem Befehl.
 - **Claude Code will etwas ausführen, das nicht in der Liste steht:** Nicht freigeben. Frag
   im Chat, warum.

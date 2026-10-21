@@ -58,9 +58,10 @@ die Claude Code daraus machen wird, und ein Blick in die Console, der zeigt, das
 hat. Du fügst den Prompt ein, liest jeden Befehl, den Claude Code dir zur Freigabe zeigt,
 vergleichst ihn mit der Liste, und gibst frei. Dann schaust du in der Console nach.
 
-Das setzt voraus, dass unter der Eingabezeile `manual mode on` steht. Das Repo stellt das
-ein. Steht dort `auto mode on`, gibt ein zweites Modell die Befehle frei statt du, und es
-lehnt zum Beispiel Deployments ab: Shift+Tab drücken, bis `manual mode on` steht.
+Claude Code läuft dabei im Auto-Modus (`auto mode on` unter der Eingabezeile): Ein zweites
+Modell prüft jeden Befehl und lässt durch, was zum Prompt passt, du liest mit. Sperrt es einen
+Befehl, meist einen Deploy oder ein neues Recht, zeigt Claude Code ihn dir mit `!` am Anfang.
+Vergleiche ihn mit der Liste, und wenn er stimmt, führ ihn mit dieser Zeile selbst aus.
 
 Wer die Aufzeichnung schaut: Jeder Schritt ist in sich abgeschlossen. Pausiere nach jedem
 Console-Check und vergleiche.
@@ -508,10 +509,11 @@ Workflows, ein Alarm, wenn etwas schiefgeht.
   Anmeldung ist abgelaufen. Im Terminal `gcloud auth login` ausführen (bei Fehlern aus
   Programmen `gcloud auth application-default login`), dann den Prompt in Claude Code
   wiederholen. Claude Code muss dafür nicht neu gestartet werden.
-- **Claude Code sagt, ein Befehl sei gesperrt, und nennt den Auto-Modus:** Unter der
-  Eingabezeile steht `auto mode on`. Shift+Tab drücken, bis `manual mode on` steht, dann
-  Claude Code sagen, es soll weitermachen. Für einen einzelnen Befehl geht auch die Zeile mit
-  `!` am Anfang, die Claude Code anbietet: Damit führst du ihn selbst aus.
+- **Claude Code sagt, ein Befehl sei gesperrt, und nennt den Auto-Modus:** Das ist die
+  Grenze des Auto-Modus, kein Fehler. Lies den Befehl, vergleiche ihn mit der Liste, und führ
+  ihn mit der `!`-Zeile aus, die Claude Code anbietet. Alternative: `/permissions`, Reiter
+  "Recently denied", `r` gibt den Befehl von Hand frei. Sperrt der Auto-Modus dreimal
+  hintereinander, pausiert er und Claude Code fragt dich wieder vor jedem Befehl.
 - **"unrecognized arguments: --filter" bei gcloud storage buckets get-iam-policy:** Dieser
   Befehl kennt `--filter` nicht, anders als `gcloud projects get-iam-policy`. Claude Code
   schlägt dir den Umweg vor, die Policy ohne Filter zu lesen und mit grep zu durchsuchen.

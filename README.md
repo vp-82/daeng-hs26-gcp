@@ -16,4 +16,4 @@ Ordner:
 - `pipeline/` Workflow (Verkettung mit Qualitätsschranke) und Alarm (Lektion 2)
 - `docs/` Tutorials
 - `CLAUDE.md` Regeln für Claude Code in diesem Repo
-- `.claude/settings.json` Claude Code startet im Standardmodus (du gibst jeden Befehl frei), plus die Lese-Befehle, die ohne Rückfrage laufen dürfen
+- `.claude/settings.json` welche Befehle Claude Code ohne Rückfrage ausführen darf
