@@ -284,7 +284,9 @@ gcloud run jobs execute ingest-gtfs --region europe-west6
 ```
 
 Console: [Cloud Run → Jobs](https://console.cloud.google.com/run/jobs) → `ingest-gtfs` →
-Ausführungen, auf die Execution klicken, dann Logs. Du siehst nacheinander:
+Ausführungen, auf die Execution klicken, dann Logs. Du siehst nacheinander, bei dir mit
+neuerem Datum und anderen Zeilenzahlen (es zählt nur die Struktur, acht Tabellen mit je
+einer Partition):
 
 ```text
 Quelle https://data.opentransportdata.swiss/dataset/timetable-2026-gtfs2020/permalink,
@@ -441,21 +443,24 @@ der Datei die Projekt-ID daeng-pect-olw5 überall durch meine Projekt-ID. Änder
 ```
 
 Claude Code merkt vielleicht an, dass das Dataset `checks`, auf das die Datei zeigt, in
-deinem Projekt noch nicht existiert. Stimmt, das legt Prompt 2 als Erstes an.
+deinem Projekt noch nicht existiert. Stimmt, das legt Prompt 2 an.
 
 Prompt 2:
 
 ```text
-Lege das Dataset checks in europe-west6 an. Lege dann einen Dataplex-Data-Quality-Scan
-trips-quality in europe-west6 auf die Tabelle raw.trips an, mit dem Regelwerk
-checks/trips_quality.yaml. Starte den Scan, warte bis er fertig ist, und zeige mir das
-Ergebnis pro Regel sowie eine Abfrage auf checks.trips_quality.
+Lege den Service Agent für Dataplex an (gcloud beta services identity create), in einem
+frischen Projekt gibt es ihn noch nicht. Lege dann das Dataset checks in europe-west6 an.
+Lege danach einen Dataplex-Data-Quality-Scan trips-quality in europe-west6 auf die Tabelle
+raw.trips an, mit dem Regelwerk checks/trips_quality.yaml. Starte den Scan, warte bis er
+fertig ist, und zeige mir das Ergebnis pro Regel sowie eine Abfrage auf checks.trips_quality.
 ```
 
 Befehle:
 
 ```bash
 bq mk --location=europe-west6 checks
+
+gcloud beta services identity create --service=dataplex.googleapis.com
 
 gcloud dataplex datascans create data-quality trips-quality --location=europe-west6 \
   --data-source-resource="//bigquery.googleapis.com/projects/daeng-KÜRZEL-XXXX/datasets/raw/tables/trips" \
@@ -526,6 +531,12 @@ Workflows, ein Alarm, wenn etwas schiefgeht.
   oder sie ist noch nicht verteilt. Eine Minute warten, Deploy wiederholen.
 - **Zwei Executions nach einem manuellen Auslösen:** Harmlos, siehe Schritt 7. Beide laden
   dieselbe Version in dieselbe Partition.
+- **"The Dataplex service account ... required for this operation was not found" beim
+  Anlegen des Scans:** In einem frischen Projekt gibt es den Service Agent von Dataplex noch
+  nicht, Google legt ihn nicht immer rechtzeitig von selbst an. Die Meldung nennt den Fix
+  gleich mit: `gcloud beta services identity create --service=dataplex.googleapis.com`,
+  eine Minute warten, dann nur das Anlegen des Scans wiederholen. Das Dataset `checks` gibt
+  es dann schon.
 - **Dataplex meldet "Unrecognized name _PARTITIONDATE":** Im YAML steht in den zwei
   SQL-Regeln der volle Tabellenname, nicht `${data()}`. Prüfe, ob deine Projekt-ID dort
   richtig eingesetzt ist.
