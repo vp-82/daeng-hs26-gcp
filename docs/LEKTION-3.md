@@ -203,10 +203,10 @@ Im Log, nach dem Build:
 
 ```text
 Quelle https://data.sbb.ch/api/explore/v2.1/catalog/datasets/rail-traffic-information/exports/jsonl, Tage 2026-10-01 bis 2026-10-31
-gs://daeng-KÜRZEL-XXXX-raw/raw/alerts/day=2026-10-01/alerts.jsonl  XX Zeilen
-alerts$20261001  XX Zeilen
+gs://daeng-KÜRZEL-XXXX-raw/raw/alerts/day=2026-10-01/alerts.jsonl  13 Zeilen
+alerts$20261001  13 Zeilen
 ... ein Paar Zeilen pro Tag
-Fertig: 31 Tage, XX Zeilen in daeng-KÜRZEL-XXXX.raw.alerts
+Fertig: 31 Tage, 544 Zeilen in daeng-KÜRZEL-XXXX.raw.alerts
 ```
 
 Console: [Cloud Run → Jobs](https://console.cloud.google.com/run/jobs) zeigt zwei Jobs,
@@ -215,7 +215,7 @@ Console: [Cloud Run → Jobs](https://console.cloud.google.com/run/jobs) zeigt z
 [BigQuery](https://console.cloud.google.com/bigquery) → `raw` → `alerts` → Details: die
 Tabelle ist nach Tag partitioniert, ein paar hundert Zeilen, alle Spalten STRING.
 
-Checkpoint: `Fertig: 31 Tage, XX Zeilen`. Die Zahl ist bei allen gleich, der Oktober ist
+Checkpoint: `Fertig: 31 Tage, 544 Zeilen`. Die Zahl ist bei allen gleich, der Oktober ist
 vorbei.
 
 ---
@@ -476,7 +476,7 @@ gcloud run jobs execute transform-gtfs --region europe-west6 --wait
 Im Log läuft zuerst der Seed, dann die Modelle aus Lektion 2 wie bisher, dann die neuen.
 `int_alerts_extracted` ist das langsamste Modell, es wartet auf das Sprachmodell, ein paar
 Minuten für ein paar Dutzend Meldungen. Danach die Tests, und am Ende
-`Done. PASS=XX WARN=0 ERROR=0 SKIP=0 TOTAL=XX`. Die Zahl ist höher als in Lektion 2, weil
+`Done. PASS=55 WARN=0 ERROR=0 SKIP=0 TOTAL=55`. Die Zahl ist höher als in Lektion 2, weil
 Modelle und Tests dazugekommen sind, und kann bei dir leicht abweichen.
 
 Ein `WARN` bei `assert_extracted_stations_exist` ist kein Fehler: Das Modell hat einen
@@ -520,9 +520,9 @@ Erwartet, Oktober 2026:
 
 | decision | Zeilen |
 |---|---|
-| Ersatzverkehr prüfen | XX |
-| Planungshinweis | XX |
-| keine | XX |
+| Ersatzverkehr prüfen | 16 |
+| Planungshinweis | 1 |
+| keine | 2 |
 
 Bei den Zeilen mit einer Stufe steht in `reason` der ganze Weg: die Auswirkung, die das
 Modell gelesen hat, die Anzahl Linien an der Haltestelle aus der Seed-Tabelle, die Dauer aus
@@ -553,7 +553,7 @@ Console: [BigQuery](https://console.cloud.google.com/bigquery) → `marts` →
 Stufen, rechts die Tabelle. Beide Quellen treffen sich hier. Der Modellaufruf selbst ist in
 der Lineage nicht sichtbar, er ist für BigQuery eine Funktion in einer Abfrage, wie `COUNT`.
 
-Checkpoint: XX Zeilen in `alert_decisions`, XX davon mit einer Stufe, und der zweite Lauf
+Checkpoint: 19 Zeilen in `alert_decisions`, 17 davon mit einer Stufe, und der zweite Lauf
 hat `extracted_at` nicht verändert.
 
 ---
