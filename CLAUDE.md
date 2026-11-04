@@ -16,13 +16,15 @@ Kurs: ZHAW Data Engineering, GCP-Lektionen. Die Person, mit der du arbeitest, ha
 
 ## Projekt
 - Standardprojekt: das Ergebnis von `gcloud config get-value project`. Region: europe-west6. BigQuery-Location: europe-west6.
-- Erlaubte APIs: cloudresourcemanager, serviceusage, cloudbilling, billingbudgets, iam, storage, bigquery, run, cloudbuild, artifactregistry, cloudscheduler, logging, monitoring, datalineage, dataplex, dataform, workflows, workflowexecutions.
+- Erlaubte APIs: cloudresourcemanager, serviceusage, cloudbilling, billingbudgets, iam, storage, bigquery, run, cloudbuild, artifactregistry, cloudscheduler, logging, monitoring, datalineage, dataplex, dataform, workflows, workflowexecutions, bigqueryconnection, aiplatform.
+- Sprachmodell (Lektion 3): nur gemini-3.8-flash, nur über die BigQuery-Verbindung vertex-ai und die URL der EU-Multiregion, kein CREATE MODEL, kein Kurzname als Endpunkt.
 - Kein Dataflow, Composer, Dataproc, Datastream, keine Compute-Engine-VMs. Wenn du meinst, eines davon sei nötig, sag es und stoppe.
 
 ## Ordner
 - `ingest/` Cloud-Run-Job, der die Daten lädt
-- `transform/` dbt-Projekt, entsteht in Lektion 2 aus transform/SPEC.md
+- `alerts/` Cloud-Run-Job, der die Bahnverkehrsinformationen der SBB lädt (Lektion 3)
+- `transform/` dbt-Projekt, entsteht in Lektion 2 aus transform/SPEC.md, wächst in Lektion 3 um transform/SPEC-ALERTS.md
 - `referenz/` Musterlösungen. Lies diesen Ordner nur, wenn die Person es ausdrücklich verlangt.
 - `checks/` Dataplex Data-Quality-Regeln
-- `pipeline/` Workflow (Verkettung mit Qualitätsschranke) und Alarm
+- `pipeline/` Workflows (Verkettung mit Qualitätsschranke, zweite Kette für die Meldungen) und Alarm
 - `docs/` Tutorials

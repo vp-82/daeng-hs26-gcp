@@ -1,0 +1,21 @@
+version: 2
+
+# Eigene Quellennamen (alerts, gtfs), damit diese Datei neben der sources.yml aus Lektion 2
+# liegen kann, ohne sie zu ändern. Beide zeigen auf dasselbe Dataset raw.
+
+sources:
+  - name: alerts
+    description: Die Bahnverkehrsinformationen der SBB, so wie der Job ingest-alerts sie geladen hat, alle Spalten STRING, eine Partition pro Tag der Veröffentlichung.
+    schema: raw
+    tables:
+      - name: alerts
+        description: Eine Zeile pro Veröffentlichung, auch für Aktualisierungen derselben Meldung. type 2 ist eine Störung, type 5 die Entwarnung.
+
+  - name: gtfs
+    description: Zwei weitere Tabellen des GTFS-Fahrplans, die Lektion 2 nicht brauchte.
+    schema: raw
+    tables:
+      - name: stops
+        description: Die Haltestellen mit Name und Koordinaten. Bahnhof und Bus-Haltestelle davor sind getrennte Einträge.
+      - name: stop_times
+        description: Jeder Halt jeder Fahrt, die grösste Tabelle im Feed. Nur hier steht, welche Linie an welcher Haltestelle hält.

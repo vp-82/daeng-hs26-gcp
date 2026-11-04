@@ -1,0 +1,98 @@
+version: 2
+
+# Die Tests sind hier die Qualitätsschranke für das, was das Sprachmodell geliefert hat. Sie laufen
+# in dbt build direkt nach dem jeweiligen Modell. Schlägt einer fehl, wird alert_decisions nicht
+# gebaut und der Job endet mit einem Fehler: eine Entscheidung auf falschen Fakten gibt es nicht.
+# Eigene Dateinamen (schema_alerts.yml), damit die schema.yml aus Lektion 2 unverändert bleibt.
+
+seeds:
+  - name: vbl_bahnhoefe
+    description: Welcher Bahnhof der SBB zu welcher Bus-Haltestelle der Verkehrsbetriebe Luzern gehört. Von Hand gepflegt, einmal mit einer Abstandsabfrage auf raw.stops entworfen.
+    columns:
+      - name: bahnhof
+        data_tests:
+          - unique
+          - not_null
+      - name: bushalt
+        data_tests:
+          - not_null
+
+models:
+  - name: stg_alerts
+    description: Die Bahnverkehrsinformationen der SBB im Fenster alerts_from bis alerts_to, eine Zeile pro Meldung (neueste Fassung), Zeiten als TIMESTAMP in UTC.
+    columns:
+      - name: alert_id
+        # Eine Meldung doppelt hiesse zwei Entscheidungen für dasselbe Ereignis.
+        data_tests:
+          - unique
+          - not_null
+      - name: start_at
+        data_tests:
+          - not_null
+
+  - name: stg_stops
+    description: Die Haltestellen aus der Seed-Tabelle vbl_bahnhoefe mit allen ihren Einträgen (Station und Kanten), neueste Feed-Version.
+    # Leer hiesse: die Namen in der Seed-Tabelle passen nicht auf den Feed, prüft tests/assert_stg_stops_covers_seed.sql.
+
+  - name: int_routes_per_stop
+    description: Welche Linien der Verkehrsbetriebe Luzern an welcher Haltestelle aus der Seed-Tabelle halten, neueste Feed-Version.
+    columns:
+      - name: stop_name
+        data_tests:
+          - not_null
+      - name: route_id
+        data_tests:
+          - not_null
+
+  - name: int_alerts_extracted
+    description: Die Fakten, die das Sprachmodell aus jeder Störungsmeldung gelesen hat, eine Zeile pro Meldung, nie zweimal extrahiert.
+    columns:
+      - name: alert_id
+        data_tests:
+          - unique
+          - not_null
+      - name: cause
+        # Das Schema im Aufruf erlaubt nur diese Werte. Der Test prüft, dass das auch stimmt.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Bauarbeiten', 'technische Störung', 'Unfall', 'Unwetter', 'Fremdeinwirkung', 'unbekannt']
+      - name: effect
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Ausfall', 'Verspätung', 'Umleitung', 'Ersatzverkehr', 'Gleisänderung', 'Information']
+      - name: severity
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3]
+                quote: false
+      - name: begin_at
+        # Ohne Beginn keine Dauer, ohne Dauer keine Schätzung.
+        data_tests:
+          - not_null
+      - name: model_version
+        # Fehlt die Version, hat nicht das Modell geantwortet, das wir festgeschrieben haben.
+        data_tests:
+          - not_null
+
+  - name: alert_decisions
+    description: Eine Zeile pro extrahierter Störungsmeldung mit der Stufe, die die Regel vergibt, und ihrer Begründung.
+    columns:
+      - name: alert_id
+        data_tests:
+          - unique
+          - not_null
+      - name: decision
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Ersatzverkehr prüfen', 'Planungshinweis', 'keine']
+      - name: reason
+        data_tests:
+          - not_null
