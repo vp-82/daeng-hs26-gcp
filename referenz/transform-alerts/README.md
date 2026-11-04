@@ -26,7 +26,7 @@ Dateien:
 
 Variablen (Standardwerte im SQL): `alerts_from` und `alerts_to` (Fenster, Standard Oktober 2026),
 `vertex_connection` (Standard `vertex-ai`), `gemini_model` (Standard `gemini-3.8-flash`),
-`decision_major` und `decision_minor` (Schwellen der Regel, Standard 100 und 10). Beispiel:
+`min_duration_minutes` (Mindestdauer einer Störung für eine Stufe, Standard 30). Beispiel:
 `dbt build --vars '{alerts_from: "2026-11-01", alerts_to: "2026-11-30"}'`
 
 Voraussetzungen im Projekt: Dataset `raw` mit `alerts`, `stops`, `stop_times`, eine

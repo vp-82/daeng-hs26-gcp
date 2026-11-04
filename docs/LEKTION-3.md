@@ -124,7 +124,8 @@ Du siehst eine Zeile JSON mit zwölf Feldern: `title`, `link`, `description`, `p
 `description_html`. Was Claude Code auffallen sollte: `startdatetime` endet auf `+00:00`,
 steht aber auf derselben Zeit wie die Lokalzeit am Anfang des Textes. `published` ist
 echtes UTC und liegt darum im Winter eine, im Sommer zwei Stunden vor der Lokalzeit im
-Text. Beides stimmt, nur die Zeitzone am einen Feld ist falsch. Solche Dinge merkt man sich, bevor man den Job schreibt, nicht danach.
+Text. Beides stimmt, nur die Zeitzone am einen Feld ist falsch. Solche Dinge merkt man
+sich, bevor man den Job schreibt, nicht danach.
 
 Console: noch nichts.
 
@@ -360,20 +361,22 @@ Prompt:
 ```text
 Lies referenz/transform-alerts/seeds/vbl_bahnhoefe.csv, nur diese Datei. Zeige mir dann mit
 einer Abfrage auf raw.stops (neueste Version, dry run zuerst) für jeden Bahnhof in der
-Spalte bahnhof die Stationen im Umkreis von 200 Metern, mit Name und Distanz in Metern,
-über ST_DISTANCE auf stop_lat und stop_lon. Nur Einträge mit location_type 1, das sind die
-Stationen, nicht die einzelnen Kanten. Vergleiche das Ergebnis mit der Spalte bushalt und
-sag mir, wo die Datei etwas anderes gewählt hat als den nächsten Nachbarn. Kopiere die Datei
-danach nach transform/seeds/.
+Spalte bahnhof und zusätzlich für den Bahnhof "Rothenburg Station" die Stationen im Umkreis
+von 200 Metern, mit Name und Distanz in Metern, über ST_DISTANCE auf stop_lat und stop_lon.
+Nur Einträge mit location_type 1, das sind die Stationen, nicht die einzelnen Kanten.
+Vergleiche das Ergebnis mit der Spalte bushalt und sag mir, wo die Datei etwas anderes
+gewählt hat als den nächsten Nachbarn. Kopiere die Datei danach nach transform/seeds/.
 ```
 
 Was du siehst: Um "Luzern" liegen zwei Stationen, "Luzern, Bahnhof" in 64 Metern und
-"Luzern Bahnhofquai" in 113, die Datei hat die nähere, dort halten die Busse. "Luzern
-Verkehrshaus" hat seinen Nachbarn erst in 163 Metern, darum 200 als Radius. Und "Rothenburg
-Station" steht nicht in der Datei, obwohl es zwei Nachbarn hat: An keinem hält eine Linie
-der Verkehrsbetriebe Luzern. Die Abfrage hätte "nimm den nächsten" allein entscheiden
-können, und Rothenburg wäre drin, mit null Linien. Dann stünde die Regel im Code und die
-Begründung nirgends.
+"Luzern Bahnhofquai" in 113, die Datei hat die nähere, dort halten die Busse. Bei "Luzern
+Verkehrshaus" ist der nächste Nachbar "Luzern, Brüelstrasse" in 155 Metern, die Datei hat
+aber "Luzern, Verkehrshaus/Lido" in 163 gewählt, die Haltestelle, die zum Bahnhof gehört,
+nicht die, die zufällig näher liegt. Ebikon und Emmenbrücke haben zwei und drei Nachbarn.
+Und "Rothenburg Station" hat zwei Nachbarn in 102 und 138 Metern, steht aber nicht in der
+Datei: An keinem von beiden hält eine Linie der Verkehrsbetriebe Luzern, das hat die Autorin
+der Datei nachgesehen. Die Abfrage hätte "nimm den nächsten" allein entscheiden können, mit
+Brüelstrasse und mit Rothenburg. Dann stünde die Regel im Code und die Begründung nirgends.
 
 Console: noch nichts, die Datei liegt in deinem Repo.
 
@@ -408,9 +411,11 @@ Spezifikation, und du prüfst nachher, ob sie im Code gelandet sind.
    nicht immer dasselbe liefern. Würde die Pipeline bei jedem Lauf alles neu extrahieren,
    könnte sich eine Entscheidung ändern, ohne dass sich die Welt geändert hat. Darum ist die
    Tabelle inkrementell: Was drin ist, bleibt drin.
-3. Die Regel ist SQL. Sie unterscheidet, ob die Störung im Gebiet der Verkehrsbetriebe liegt
-   oder nur eine Linie betrifft, die in Luzern endet, und sie hat zwei Schwellen, beide
-   Variablen. Wer sie ändern will, ändert eine Zahl und begründet das, nicht einen Prompt.
+3. Die Regel ist SQL und fragt dreierlei: Wo liegt die Störung, im Gebiet der
+   Verkehrsbetriebe oder nur auf einer Linie, die in Luzern endet. Was ist die Auswirkung,
+   Ausfall oder nur Verspätung. Und wie lange, unter einer Mindestdauer gibt es keine Stufe.
+   Die Mindestdauer ist eine Variable. Wer sie ändern will, ändert eine Zahl und begründet
+   das, nicht einen Prompt.
 
 **Was jetzt passiert.** `transform/SPEC-ALERTS.md` beschreibt die Modelle, Spalten und Tests.
 Claude Code ergänzt damit dein Projekt aus Lektion 2, ohne dessen Dateien zu ändern. Die
@@ -431,8 +436,8 @@ liest du, ohne SQL zu können: Steht in `int_alerts_extracted` ein `AI.GENERATE`
 `output_schema`, einer Adresse mit `locations/eu` und `gemini-3.8-flash`? Kommt
 `is_incremental` vor? Gibt es vor dem Aufruf einen Filter auf `message_type` und die
 Seed-Tabelle? Und in `alert_decisions`: ein `CASE` mit `Ersatzverkehr prüfen`,
-`Planungshinweis` und `keine`, und zwei `var(...)` für die Schwellen? Fehlt eines davon, sag
-es, bevor du OK gibst.
+`Planungshinweis` und `keine`, und ein `var(...)` für die Mindestdauer? Fehlt eines davon,
+sag es, bevor du OK gibst.
 
 Unterwegs fragt Claude Code vielleicht, ob es `dbt parse` ausführen darf, um seine Dateien
 zu prüfen, oder ob es die dbt-Dokumentation lesen darf. Beides darfst du erlauben, es
@@ -548,13 +553,16 @@ Bei den Zeilen mit einer Stufe steht in `reason` der ganze Weg: die Auswirkung, 
 Modell gelesen hat, ob die Störung im Abschnitt liegt oder nur auf einer Linie nach Luzern,
 die Anzahl Linien an der Haltestelle aus der Seed-Tabelle, die Dauer aus den Zeiten im Text,
 die Schätzung der betroffenen Fahrten aus dem Mart von Lektion 2. Vier Quellen, ein Satz.
-Die vier mit `Ersatzverkehr prüfen` sind die, deren Abschnitt im Gebiet liegt: Meggen -
-Immensee, Emmenbrücke - Waldibrücke, Luzern - Lenzburg, Olten - Luzern. Die dreizehn mit
-`Planungshinweis` liegen anderswo, auf einer Linie, die in Luzern endet: Lenzburg - Beinwil
-am See, Sursee - Sempach-Neuenkirch, Wolhusen - Schüpfheim. Dort fahren die Züge nach Luzern
-verspätet oder gar nicht, aber Ersatzbusse in Luzern helfen niemandem. Bei den zwei mit
-`keine` ist kein Bahnhof im Gebiet genannt, Aarau - Rupperswil und Aarburg-Oftringen -
-Rothrist.
+Die vier mit `Ersatzverkehr prüfen` sind die, deren Abschnitt an einem Bahnhof aus der
+Seed-Tabelle liegt: Meggen - Immensee (vier Linien an Meggen, Kreuz), Emmenbrücke -
+Waldibrücke (zwei Linien an Emmenbrücke, Bahnhof), Luzern - Lenzburg und Olten - Luzern
+(alle 26 am Bahnhof Luzern). Die dreizehn mit `Planungshinweis` nennen keinen Bahnhof aus
+der Seed-Tabelle im Abschnitt, nur die Linie, die in Luzern endet: Lenzburg - Beinwil am
+See, Sursee - Sempach-Neuenkirch, Wolhusen - Schüpfheim, auch Emmenbrücke Gersag -
+Waldibrücke, denn Gersag steht nicht in der Datei. Dort fahren die Züge nach Luzern verspätet
+oder gar nicht, und das betrifft alle 26 Linien am Bahnhof, als Hinweis, nicht als
+Ersatzverkehr. Bei den zwei mit `keine` ist kein Bahnhof im Gebiet genannt, Aarau -
+Rupperswil und Aarburg-Oftringen - Rothrist.
 
 Zwei Dinge fallen beim Lesen auf. Die Zeiten stehen in UTC, so zeigt BigQuery Zeitstempel
 an: `2026-10-27 03:32` ist die Lokalzeit 04:32 aus Schritt 4. Und bei "Luzern - Lenzburg"
@@ -636,8 +644,9 @@ gcloud scheduler jobs create http alerts-pipeline-schedule --location=europe-wes
 
 Der Workflow-Lauf dauert gut eine Minute: der Ingest holt drei Tage (`Fertig: 3 Tage`), der
 Transform baut alles, das Modell liest nichts Neues (`MERGE (0.0 rows)`), weil die neuen
-Tage ausserhalb des Oktober-Fensters liegen. Im Betrieb würde das Fenster mitwandern, als Variable beim
-dbt-Aufruf. Hier bleibt es Oktober, damit die Zahlen stehen, solange die Lektion dauert.
+Tage ausserhalb des Oktober-Fensters liegen. Im Betrieb würde das Fenster mitwandern, als
+Variable beim dbt-Aufruf. Hier bleibt es Oktober, damit die Zahlen stehen, solange die
+Lektion dauert.
 
 Console: [Workflows](https://console.cloud.google.com/workflows) zeigt zwei Workflows,
 `gtfs-pipeline` und `alerts-pipeline`, letzterer mit einer grünen Execution.
@@ -662,9 +671,9 @@ Zeiten im Text gemeint sind. Das ist Lesen, und Lesen kann es besser als jede Re
 Wo das Modell nicht entschieden hat: welche Meldungen es überhaupt liest (eine Regel auf
 Typ und Seed-Tabelle), welche Werte es liefern darf (das Schema), ob seine Werte stimmen
 (die Tests), welcher Bahnhof zu welcher Haltestelle gehört (die Seed-Tabelle), ob eine
-Störung im Gebiet liegt oder nur eine Linie dorthin betrifft (die Regel), ab wie vielen
-Fahrten sie eine Stufe bekommt (zwei Variablen), und ob es eine Meldung ein zweites Mal
-lesen darf (nein). Jede dieser Entscheidungen steht in einer Datei, die jemand ändern und
+Störung im Gebiet liegt oder nur eine Linie dorthin betrifft (die Regel), ab welcher Dauer
+sie eine Stufe bekommt (eine Variable), und ob es eine Meldung ein zweites Mal lesen darf
+(nein). Jede dieser Entscheidungen steht in einer Datei, die jemand ändern und
 begründen kann.
 
 Was es gekostet hat: 19 Modellaufrufe für den Oktober, zusammen knapp 17 000 Token, ein
