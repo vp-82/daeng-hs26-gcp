@@ -556,7 +556,12 @@ die Schätzung der betroffenen Fahrten aus dem Mart von Lektion 2. Vier Quellen,
 Die vier mit `Ersatzverkehr prüfen` sind die, deren Abschnitt an einem Bahnhof aus der
 Seed-Tabelle liegt: Meggen - Immensee (vier Linien an Meggen, Kreuz), Emmenbrücke -
 Waldibrücke (zwei Linien an Emmenbrücke, Bahnhof), Luzern - Lenzburg und Olten - Luzern
-(alle 26 am Bahnhof Luzern). Die dreizehn mit `Planungshinweis` nennen keinen Bahnhof aus
+(alle 26 am Bahnhof Luzern). Die Fahrtenzahl bei Meggen ist bei dir vielleicht 15,
+vielleicht 30: Je nachdem, welches Ende das Modell gelesen hat, 06:00 oder 07:30, dauert die
+Störung 88 oder 178 Minuten. Das ist die Schwankung aus Schritt 4, und der Grund, warum die
+Stufe an der Lage und der Dauer hängt, nicht an einer Fahrtenzahl. Und die Linie 27 steht mit
+null Fahrten in der Liste: Sie hält in Meggen, hat aber im Fenster des Marts keinen
+Verkehrstag. Die dreizehn mit `Planungshinweis` nennen keinen Bahnhof aus
 der Seed-Tabelle im Abschnitt, nur die Linie, die in Luzern endet: Lenzburg - Beinwil am
 See, Sursee - Sempach-Neuenkirch, Wolhusen - Schüpfheim, auch Emmenbrücke Gersag -
 Waldibrücke, denn Gersag steht nicht in der Datei. Dort fahren die Züge nach Luzern verspätet

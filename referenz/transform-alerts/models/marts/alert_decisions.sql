@@ -53,16 +53,19 @@ trips_per_day AS (
 
 affected_routes AS (
     -- Jede Linie pro Meldung einmal, auch wenn sie an zwei genannten Haltestellen hält.
+    -- LEFT JOIN auf die Fahrten: eine Linie, die im Fenster des Marts keinen Verkehrstag hat
+    -- (die 27 in Meggen), bleibt in der Liste und zählt null Fahrten, statt still zu
+    -- verschwinden.
     SELECT
         s.alert_id,
         r.route_id,
         r.route_short_name,
         s.bushalt,
         s.in_section,
-        t.trips_per_day
+        COALESCE(t.trips_per_day, 0) AS trips_per_day
     FROM deciding_stations AS s
     JOIN {{ ref('int_routes_per_stop') }} AS r ON r.stop_name = s.bushalt
-    JOIN trips_per_day AS t ON t.route_id = r.route_id
+    LEFT JOIN trips_per_day AS t ON t.route_id = r.route_id
     QUALIFY ROW_NUMBER() OVER (PARTITION BY s.alert_id, r.route_id ORDER BY s.bushalt) = 1
 ),
 
@@ -70,7 +73,11 @@ per_alert AS (
     SELECT
         alert_id,
         COUNT(*) AS n_routes,
-        STRING_AGG(route_short_name, ', ' ORDER BY SAFE_CAST(REGEXP_EXTRACT(route_short_name, r'\d+') AS INT64), route_short_name) AS routes,
+        -- Tageslinien zuerst, numerisch, dann die Nachtlinien: "24, 25, 27, N3".
+        STRING_AGG(route_short_name, ', '
+            ORDER BY NOT REGEXP_CONTAINS(route_short_name, r'^\d'),
+                SAFE_CAST(REGEXP_EXTRACT(route_short_name, r'\d+') AS INT64),
+                route_short_name) AS routes,
         STRING_AGG(DISTINCT bushalt, ', ') AS bus_stops,
         LOGICAL_OR(in_section) AS in_section,
         SUM(trips_per_day) AS trips_per_day
