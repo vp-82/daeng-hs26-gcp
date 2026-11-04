@@ -119,12 +119,12 @@ curl -sS -G "https://data.sbb.ch/api/explore/v2.1/catalog/datasets/rail-traffic-
 ```
 
 Du siehst eine Zeile JSON mit zwölf Feldern: `title`, `link`, `description`, `published`,
-`cause` (immer leer), `startdatetime`, `enddatetime`, `dailyvaliditybegin`,
+`cause` (immer null), `startdatetime`, `enddatetime`, `dailyvaliditybegin`,
 `dailyvalidityend`, `type` (2 ist eine Störung, 5 die Entwarnung), `author` (immer SBB),
 `description_html`. Was Claude Code auffallen sollte: `startdatetime` endet auf `+00:00`,
-steht aber auf derselben Zeit wie die Lokalzeit am Anfang des Textes. `published` liegt
-anderthalb oder zwei Stunden davor, das ist echtes UTC. Beides stimmt, nur die Zeitzone am
-einen Feld ist falsch. Solche Dinge merkt man sich, bevor man den Job schreibt, nicht danach.
+steht aber auf derselben Zeit wie die Lokalzeit am Anfang des Textes. `published` ist
+echtes UTC und liegt darum im Winter eine, im Sommer zwei Stunden vor der Lokalzeit im
+Text. Beides stimmt, nur die Zeitzone am einen Feld ist falsch. Solche Dinge merkt man sich, bevor man den Job schreibt, nicht danach.
 
 Console: noch nichts.
 
@@ -215,6 +215,9 @@ Console: [Cloud Run → Jobs](https://console.cloud.google.com/run/jobs) zeigt z
 [BigQuery](https://console.cloud.google.com/bigquery) → `raw` → `alerts` → Details: die
 Tabelle ist nach Tag partitioniert, ein paar hundert Zeilen, alle Spalten STRING.
 
+In BigQuery sind es 30 Partitionen, nicht 31: Am 31. Oktober gab es keine Meldung, die
+Datei für diesen Tag ist leer, und eine leere Datei lädt der Job nicht (`0 Zeilen` im Log).
+
 Checkpoint: `Fertig: 31 Tage, 544 Zeilen`. Die Zahl ist bei allen gleich, der Oktober ist
 vorbei.
 
@@ -243,8 +246,8 @@ Prompt 1:
 Aktiviere die APIs bigqueryconnection und aiplatform. Lege in BigQuery eine Verbindung
 vertex-ai vom Typ Cloud Resource in europe-west6 an. Zeige mir den Service-Account, den die
 Verbindung bekommen hat, und gib ihm auf dem Projekt die Rolle Agent Platform User
-(roles/aiplatform.user), sonst nichts. Sag mir, dass das Recht etwa eine Minute braucht, bis
-es gilt.
+(roles/aiplatform.user), sonst nichts. Sag mir, dass das Recht zwei bis drei Minuten
+braucht, bis es gilt.
 ```
 
 Befehle:
@@ -262,7 +265,8 @@ gcloud projects add-iam-policy-binding daeng-KÜRZEL-XXXX \
 ```
 
 Der Service-Account der Verbindung heisst `bqcx-<projektnummer>-<vier zeichen>@gcp-sa-bigquery-condel.iam.gserviceaccount.com`.
-Du hast ihn nicht angelegt, Google hat das beim Anlegen der Verbindung getan.
+Du hast ihn nicht angelegt, Google hat das beim Anlegen der Verbindung getan. Die beiden APIs
+sind oft schon aktiv, dann ist der erste Befehl ohne Wirkung, das ist in Ordnung.
 
 Prompt 2:
 
@@ -278,7 +282,8 @@ STRING und end STRING (YYYY-MM-DD HH:MM:SS), severity INT64 (1 bis 3). Der Promp
 Modell, dass es nur verwenden soll, was der Text sagt, Stationsnamen genau wie im Text, Zeiten
 sind Schweizer Lokalzeit. Übergib title und description_html. Dry run zuerst. Zeige mir
 Titel, die Spalten aus dem Schema und status. Dann führe genau dieselbe Abfrage ein zweites
-Mal aus und sag mir, ob sich etwas unterscheidet.
+Mal aus, ohne Ergebniscache (bq query --nouse_cache), und sag mir, ob sich etwas
+unterscheidet.
 ```
 
 Die Abfrage, die Claude Code daraus baut, sieht im Kern so aus:
@@ -306,17 +311,22 @@ UNNEST([AI.GENERATE(
 )]) AS g
 ```
 
-Der erste Aufruf kann ein bis zwei Minuten dauern. Kommt stattdessen `does not have the
-permission to access or use the endpoint`, gilt das Recht aus Prompt 1 noch nicht, eine
-Minute warten und nochmals.
+Der Aufruf dauert etwa 15 Sekunden. Kommt stattdessen `does not have the permission to
+access or use the endpoint`, schon beim Dry run, gilt das Recht aus Prompt 1 noch nicht.
+Das dauert zwei bis drei Minuten, dann nochmals.
 
 Erwartet: eine Zeile. `cause` ist `Bauarbeiten` (der Text sagt "exceptional construction
 work"), `effect` `Ausfall`, `section_from` `Meggen`, `section_to` `Immensee`, `begin`
 `2026-10-27 04:32:00`, `severity` 3, `status` leer. Das Modell hat englischen Text gelesen
 und deutsche Kategorien geliefert, weil das Schema sie so vorgibt. Beim zweiten Aufruf ist
-meist alles gleich, manchmal nicht: `end` kann zwischen der Zeit im Kopf der Meldung und der
-Zeit nach "lasts until approx." wechseln, `effect` zwischen `Ausfall` und `Ersatzverkehr`.
-Temperatur 0 heisst wenig Zufall, nicht keiner.
+meist alles gleich, manchmal nicht: `end` kann zwischen der Zeit im Kopf der Meldung
+(07:30) und der Zeit nach "lasts until approx." (06:00) wechseln, `effect` zwischen
+`Ausfall` und `Ersatzverkehr`. Temperatur 0 heisst wenig Zufall, nicht keiner.
+
+Darum `--nouse_cache`: Ohne diese Option beantwortet BigQuery die zweite, identische
+Abfrage aus seinem Ergebniscache, in Millisekunden und garantiert gleich. Das Modell wäre
+gar nicht gefragt worden. Der Cache ist im Betrieb nützlich, hier würde er genau das
+verstecken, was du sehen willst.
 
 Console: [BigQuery](https://console.cloud.google.com/bigquery) → im Explorer dein Projekt
 aufklappen → "Externe Verbindungen" → `vertex-ai`, mit dem Service-Account. Und in
@@ -335,14 +345,14 @@ eigene Station, sechzig Meter neben der anderen. Irgendwo muss stehen, welcher B
 welcher Haltestelle gehört. Das ist Fachwissen, und Fachwissen kommt nicht vom Modell. Es
 steht in einer Tabelle, die ein Mensch pflegt.
 
-Die Tabelle ist eine CSV-Datei im Repo, `vbl_bahnhoefe.csv`, zehn Zeilen, Spalten `bahnhof`
+Die Tabelle ist eine CSV-Datei im Repo, `vbl_bahnhoefe.csv`, neun Zeilen, Spalten `bahnhof`
 und `bushalt`. dbt nennt so etwas einen Seed: eine kleine Tabelle, die aus einer Datei kommt
 statt aus einer Quelle, versioniert wie Code. Wer einen Bahnhof dazunimmt, ändert die Datei,
 und die Änderung hat einen Autor und ein Datum.
 
 Entworfen wurde die Datei mit einer Abfrage, nicht von Hand: Für jeden Bahnhof die
-Haltestellen im Umkreis von 150 Metern, aus den Koordinaten in `raw.stops`. Die Abfrage
-schlägt vor, der Mensch wählt aus. Das schaust du dir an, damit du weisst, woher die zehn
+Haltestellen im Umkreis von 200 Metern, aus den Koordinaten in `raw.stops`. Die Abfrage
+schlägt vor, der Mensch wählt aus. Das schaust du dir an, damit du weisst, woher die neun
 Zeilen kommen.
 
 Prompt:
@@ -350,21 +360,24 @@ Prompt:
 ```text
 Lies referenz/transform-alerts/seeds/vbl_bahnhoefe.csv, nur diese Datei. Zeige mir dann mit
 einer Abfrage auf raw.stops (neueste Version, dry run zuerst) für jeden Bahnhof in der
-Spalte bahnhof die Stationen im Umkreis von 150 Metern, mit Name und Distanz in Metern,
+Spalte bahnhof die Stationen im Umkreis von 200 Metern, mit Name und Distanz in Metern,
 über ST_DISTANCE auf stop_lat und stop_lon. Nur Einträge mit location_type 1, das sind die
 Stationen, nicht die einzelnen Kanten. Vergleiche das Ergebnis mit der Spalte bushalt und
 sag mir, wo die Datei etwas anderes gewählt hat als den nächsten Nachbarn. Kopiere die Datei
 danach nach transform/seeds/.
 ```
 
-Was du siehst: Um "Luzern" liegen mehrere Stationen, "Luzern, Bahnhof" ist eine davon, und
-die Datei hat sie gewählt, weil dort die Busse halten. Bei anderen Bahnhöfen gibt es genau
-einen Nachbarn. Die Abfrage hätte das alles auch allein entscheiden können, mit der Regel
-"nimm den nächsten". Dann stünde die Regel im Code und die Begründung nirgends.
+Was du siehst: Um "Luzern" liegen zwei Stationen, "Luzern, Bahnhof" in 64 Metern und
+"Luzern Bahnhofquai" in 113, die Datei hat die nähere, dort halten die Busse. "Luzern
+Verkehrshaus" hat seinen Nachbarn erst in 163 Metern, darum 200 als Radius. Und "Rothenburg
+Station" steht nicht in der Datei, obwohl es zwei Nachbarn hat: An keinem hält eine Linie
+der Verkehrsbetriebe Luzern. Die Abfrage hätte "nimm den nächsten" allein entscheiden
+können, und Rothenburg wäre drin, mit null Linien. Dann stünde die Regel im Code und die
+Begründung nirgends.
 
 Console: noch nichts, die Datei liegt in deinem Repo.
 
-Checkpoint: `transform/seeds/vbl_bahnhoefe.csv` existiert, zehn Zeilen plus Kopfzeile.
+Checkpoint: `transform/seeds/vbl_bahnhoefe.csv` existiert, neun Zeilen plus Kopfzeile.
 
 ---
 
@@ -395,8 +408,9 @@ Spezifikation, und du prüfst nachher, ob sie im Code gelandet sind.
    nicht immer dasselbe liefern. Würde die Pipeline bei jedem Lauf alles neu extrahieren,
    könnte sich eine Entscheidung ändern, ohne dass sich die Welt geändert hat. Darum ist die
    Tabelle inkrementell: Was drin ist, bleibt drin.
-3. Die Regel ist SQL mit zwei Schwellen, und die Schwellen sind Variablen. Wer sie ändern
-   will, ändert eine Zahl und begründet das, nicht einen Prompt.
+3. Die Regel ist SQL. Sie unterscheidet, ob die Störung im Gebiet der Verkehrsbetriebe liegt
+   oder nur eine Linie betrifft, die in Luzern endet, und sie hat zwei Schwellen, beide
+   Variablen. Wer sie ändern will, ändert eine Zahl und begründet das, nicht einen Prompt.
 
 **Was jetzt passiert.** `transform/SPEC-ALERTS.md` beschreibt die Modelle, Spalten und Tests.
 Claude Code ergänzt damit dein Projekt aus Lektion 2, ohne dessen Dateien zu ändern. Die
@@ -420,15 +434,19 @@ Seed-Tabelle? Und in `alert_decisions`: ein `CASE` mit `Ersatzverkehr prüfen`,
 `Planungshinweis` und `keine`, und zwei `var(...)` für die Schwellen? Fehlt eines davon, sag
 es, bevor du OK gibst.
 
-Wie in Lektion 2 schlägt Claude Code nach dem OK vielleicht vor, dbt lokal laufen zu lassen.
-Sag nicht ja, der Job macht das in Schritt 7.
+Unterwegs fragt Claude Code vielleicht, ob es `dbt parse` ausführen darf, um seine Dateien
+zu prüfen, oder ob es die dbt-Dokumentation lesen darf. Beides darfst du erlauben, es
+liest nur. Wie in Lektion 2 schlägt es nach dem OK vielleicht vor, dbt ganz laufen zu
+lassen. Sag nicht ja, der Job macht das in Schritt 7.
 
 Console: noch nichts.
 
 Checkpoint: neu in `transform/`: `seeds/vbl_bahnhoefe.csv`, `models/sources_alerts.yml`,
 `models/schema_alerts.yml`, `models/staging/stg_alerts.sql`, `models/staging/stg_stops.sql`,
 `models/intermediate/int_routes_per_stop.sql`, `models/intermediate/int_alerts_extracted.sql`,
-`models/marts/alert_decisions.sql`, vier neue Dateien in `tests/`. Nichts Altes geändert
+`models/marts/alert_decisions.sql`, in `tests/` die vier Dateien
+`assert_extracted_end_after_begin.sql`, `assert_extracted_begin_matches_source.sql`,
+`assert_extracted_stations_exist.sql`, `assert_stg_stops_covers_seed.sql`. Nichts Altes geändert
 (`git status` zeigt nur neue Dateien in `transform/`, wenn du dort nichts committet hast).
 
 ---
@@ -474,10 +492,11 @@ gcloud run jobs execute transform-gtfs --region europe-west6 --wait
 ```
 
 Im Log läuft zuerst der Seed, dann die Modelle aus Lektion 2 wie bisher, dann die neuen.
-`int_alerts_extracted` ist das langsamste Modell, es wartet auf das Sprachmodell, ein paar
-Minuten für ein paar Dutzend Meldungen. Danach die Tests, und am Ende
-`Done. PASS=55 WARN=0 ERROR=0 SKIP=0 TOTAL=55`. Die Zahl ist höher als in Lektion 2, weil
-Modelle und Tests dazugekommen sind, und kann bei dir leicht abweichen.
+`int_alerts_extracted` wartet auf das Sprachmodell, für die rund zwanzig Meldungen, die die
+Vorauswahl durchlässt, ein paar Sekunden, BigQuery stellt die Fragen parallel. Danach die
+Tests, und am Ende `Done. PASS=55 WARN=0 ERROR=0 SKIP=0 NO-OP=0 REUSED=0 TOTAL=55`. Die Zahl
+ist höher als in Lektion 2, weil Modelle und Tests dazugekommen sind, und kann bei dir
+leicht abweichen.
 
 Ein `WARN` bei `assert_extracted_stations_exist` ist kein Fehler: Das Modell hat einen
 Bahnhof anders geschrieben als der Feed, die Meldung bekommt dann keine Linien zugeordnet,
@@ -491,11 +510,11 @@ hat `int_routes_per_stop` und `int_alerts_extracted`, `marts` hat `alert_decisio
 (`gemini-3.8-flash`) und die Token pro Zeile.
 
 Wenn dein Projekt nicht baut oder dbt mit einem Fehler endet, den du nicht in zwei Minuten
-verstehst: Musterlösung hinein und nochmals deployen. Sie überschreibt nur die neuen Dateien,
-dein Projekt aus Lektion 2 bleibt.
+verstehst: Musterlösung hinein und nochmals deployen. Der Befehl kopiert nur die drei Ordner
+und ersetzt darin die Dateien mit denselben Namen, dein Projekt aus Lektion 2 bleibt.
 
 ```bash
-cp -r referenz/transform-alerts/. transform/
+cp -R referenz/transform-alerts/models referenz/transform-alerts/seeds referenz/transform-alerts/tests transform/
 ```
 
 Checkpoint: Execution grün, dbt-Zusammenfassung ohne `ERROR` und ohne `FAIL`.
@@ -512,23 +531,36 @@ Prompt 1:
 
 ```text
 Zeige mir aus marts.alert_decisions die Anzahl Zeilen pro decision. Dann alle Zeilen mit
-einer anderen Stufe als keine: title, decision, reason, routes, affected_trips, sortiert
-nach affected_trips absteigend. Dann drei Zeilen mit Stufe keine, title und reason.
+einer anderen Stufe als keine: title, location_kind, decision, reason, affected_trips,
+sortiert nach decision und affected_trips absteigend. Dann die Zeilen mit Stufe keine,
+title und reason.
 ```
 
 Erwartet, Oktober 2026:
 
 | decision | Zeilen |
 |---|---|
-| Ersatzverkehr prüfen | 16 |
-| Planungshinweis | 1 |
+| Ersatzverkehr prüfen | 4 |
+| Planungshinweis | 13 |
 | keine | 2 |
 
 Bei den Zeilen mit einer Stufe steht in `reason` der ganze Weg: die Auswirkung, die das
-Modell gelesen hat, die Anzahl Linien an der Haltestelle aus der Seed-Tabelle, die Dauer aus
-den Zeiten im Text, die Schätzung der betroffenen Fahrten aus dem Mart von Lektion 2. Vier
-Quellen, ein Satz. Bei den Zeilen mit `keine` steht meistens, dass kein Bahnhof im Gebiet
-genannt ist, oder die Zahl lag unter der Schwelle.
+Modell gelesen hat, ob die Störung im Abschnitt liegt oder nur auf einer Linie nach Luzern,
+die Anzahl Linien an der Haltestelle aus der Seed-Tabelle, die Dauer aus den Zeiten im Text,
+die Schätzung der betroffenen Fahrten aus dem Mart von Lektion 2. Vier Quellen, ein Satz.
+Die vier mit `Ersatzverkehr prüfen` sind die, deren Abschnitt im Gebiet liegt: Meggen -
+Immensee, Emmenbrücke - Waldibrücke, Luzern - Lenzburg, Olten - Luzern. Die dreizehn mit
+`Planungshinweis` liegen anderswo, auf einer Linie, die in Luzern endet: Lenzburg - Beinwil
+am See, Sursee - Sempach-Neuenkirch, Wolhusen - Schüpfheim. Dort fahren die Züge nach Luzern
+verspätet oder gar nicht, aber Ersatzbusse in Luzern helfen niemandem. Bei den zwei mit
+`keine` ist kein Bahnhof im Gebiet genannt, Aarau - Rupperswil und Aarburg-Oftringen -
+Rothrist.
+
+Zwei Dinge fallen beim Lesen auf. Die Zeiten stehen in UTC, so zeigt BigQuery Zeitstempel
+an: `2026-10-27 03:32` ist die Lokalzeit 04:32 aus Schritt 4. Und bei "Luzern - Lenzburg"
+hat das Modell Abschnitt und Linie vertauscht, in `line_from` steht Emmenbrücke Gersag. Kein
+Test fängt das, die Regel hat trotzdem richtig gestuft, weil Luzern im Abschnitt steht. Merk
+dir die Zeile, in Lektion 4 geht es um genau solche Fälle.
 
 Die Schätzung ist grob, das steht so im Code: Fahrten pro Tag mal Dauer durch 24, als ob
 nachts gleich viel führe wie am Mittag. Für eine Stufe reicht das. Wer es genauer will,
@@ -543,10 +575,11 @@ extracted_at, und wie lange das Modell int_alerts_extracted diesmal laut dbt-Log
 hat.
 ```
 
-Erwartet: gleich viele Zeilen wie vorher, `extracted_at` unverändert, das Modell in
-Sekunden statt Minuten fertig. Das Sprachmodell wurde nicht aufgerufen, kein Text ist in die
-EU gegangen, nichts hat gekostet. Das ist die zweite Entscheidung aus Schritt 6, und sie ist
-der Unterschied zwischen einem Demo und einer Pipeline.
+Erwartet: gleich viele Zeilen wie vorher, `extracted_at` unverändert, und im dbt-Log steht
+bei `int_alerts_extracted` diesmal `MERGE (0.0 rows)`. Das Sprachmodell wurde nicht
+aufgerufen, kein Text ist in die EU gegangen, nichts hat gekostet. Das ist die zweite
+Entscheidung aus Schritt 6, und sie ist der Unterschied zwischen einem Demo und einer
+Pipeline.
 
 Console: [BigQuery](https://console.cloud.google.com/bigquery) → `marts` →
 `alert_decisions` → Tab **Lineage**: links `raw.alerts` und `raw.stop_times`, dazwischen die
@@ -601,9 +634,9 @@ gcloud scheduler jobs create http alerts-pipeline-schedule --location=europe-wes
   --oauth-service-account-email="scheduler-sa@daeng-KÜRZEL-XXXX.iam.gserviceaccount.com"
 ```
 
-Der Workflow-Lauf dauert etwa zwei Minuten: der Ingest holt drei Tage (`Fertig: 3 Tage`), der
-Transform baut alles, das Modell liest nichts Neues, weil die neuen Tage ausserhalb des
-Oktober-Fensters liegen. Im Betrieb würde das Fenster mitwandern, als Variable beim
+Der Workflow-Lauf dauert gut eine Minute: der Ingest holt drei Tage (`Fertig: 3 Tage`), der
+Transform baut alles, das Modell liest nichts Neues (`MERGE (0.0 rows)`), weil die neuen
+Tage ausserhalb des Oktober-Fensters liegen. Im Betrieb würde das Fenster mitwandern, als Variable beim
 dbt-Aufruf. Hier bleibt es Oktober, damit die Zahlen stehen, solange die Lektion dauert.
 
 Console: [Workflows](https://console.cloud.google.com/workflows) zeigt zwei Workflows,
@@ -628,13 +661,14 @@ Zeiten im Text gemeint sind. Das ist Lesen, und Lesen kann es besser als jede Re
 
 Wo das Modell nicht entschieden hat: welche Meldungen es überhaupt liest (eine Regel auf
 Typ und Seed-Tabelle), welche Werte es liefern darf (das Schema), ob seine Werte stimmen
-(die Tests), welcher Bahnhof zu welcher Haltestelle gehört (die Seed-Tabelle), ab wie vielen
-Fahrten eine Störung eine Stufe bekommt (zwei Variablen), und ob es eine Meldung ein zweites
-Mal lesen darf (nein). Jede dieser Entscheidungen steht in einer Datei, die jemand ändern und
+(die Tests), welcher Bahnhof zu welcher Haltestelle gehört (die Seed-Tabelle), ob eine
+Störung im Gebiet liegt oder nur eine Linie dorthin betrifft (die Regel), ab wie vielen
+Fahrten sie eine Stufe bekommt (zwei Variablen), und ob es eine Meldung ein zweites Mal
+lesen darf (nein). Jede dieser Entscheidungen steht in einer Datei, die jemand ändern und
 begründen kann.
 
-Was es gekostet hat: ein paar Dutzend Modellaufrufe für den Oktober, zusammen einige
-zehntausend Token, ein paar Rappen. Die Tabelle `int_alerts_extracted` führt die Token pro
+Was es gekostet hat: 19 Modellaufrufe für den Oktober, zusammen knapp 17 000 Token, ein
+paar Rappen. Die Tabelle `int_alerts_extracted` führt die Token pro
 Zeile, da kann man nachrechnen.
 
 Was die Pipeline nicht tut: Sie schreibt keinen Text für Fahrgäste und sie bestellt keinen
@@ -655,13 +689,20 @@ dann alleine tun darf.
   von derselben Adresse. Passiert nur, wenn viele Leute hinter derselben Adresse sitzen oder
   ein Job in einer Schleife läuft. Morgen ist das Kontingent wieder da.
 - **`AI.GENERATE` meldet `does not have the permission to access or use the endpoint`:** Das
-  Recht für den Service-Account der Verbindung ist noch nicht überall angekommen. Eine Minute
-  warten, dann dieselbe Abfrage nochmals. Nichts ändern.
+  Recht für den Service-Account der Verbindung ist noch nicht überall angekommen, auch der
+  Dry run meldet das. Zwei bis drei Minuten warten, dann dieselbe Abfrage nochmals. Nichts
+  ändern.
 - **`Publisher model ... locations/europe-west6 ... was not found`:** Jemand hat die
   regionale Adresse für Zürich verwendet. Gemini gibt es dort nicht. Die Adresse der
   EU-Multiregion aus Schritt 4 verwenden.
-- **Der erste Modellaufruf dauert über zwei Minuten:** Normal nach dem Anlegen der
-  Verbindung. Die folgenden Aufrufe sind schneller.
+- **Der zweite Aufruf in Schritt 4 ist in Millisekunden fertig und identisch:** Das war der
+  Ergebniscache von BigQuery, nicht das Modell. `bq query --nouse_cache`.
+- **dbt scheitert in `int_alerts_extracted` mit `LEFT SEMI JOIN cannot be used without a
+  condition that is an equality`:** Die Vorauswahl steht als `EXISTS` mit einer Regex-Bedingung,
+  das erlaubt BigQuery nicht. Alle Bahnhöfe mit `STRING_AGG` zu einem Muster verbinden und ein
+  einziges `REGEXP_CONTAINS`, so steht es in der Spezifikation.
+- **dbt scheitert mit `Failed to parse the option output_schema`:** Meistens `enum` ohne
+  Backticks. `ENUM` ist ein reserviertes Wort, es muss `` `enum` `` heissen.
 - **dbt scheitert in `int_alerts_extracted` mit `Access Denied` und `bigquery.connections.use`:**
   `transform-sa` fehlt die Rolle BigQuery Connection User (Schritt 7, Prompt 1).
 - **dbt meldet `Unsupported field type: TYPE_TIMESTAMP`:** Claude Code hat `begin` oder
@@ -677,8 +718,10 @@ dann alleine tun darf.
   Zeit im Text für den Beginn gehalten. Die Zeile anschauen. Meistens ist der Text ungewöhnlich
   aufgebaut. Für heute: Zeile mit dem Prompt in Schritt 4 nachvollziehen, der Test tut, was er
   soll.
-- **Deine erzeugte Fassung baut nicht:** `cp -r referenz/transform-alerts/. transform/`, Job
-  nochmals deployen (Schritt 7, Prompt 2). Dein Projekt aus Lektion 2 bleibt dabei erhalten.
+- **Deine erzeugte Fassung baut nicht:** Musterlösung hinein mit dem Befehl aus Schritt 7
+  (nur die drei Ordner `models`, `seeds`, `tests`), Job nochmals deployen (Schritt 7, Prompt
+  2). Hat deine Fassung Testdateien mit anderen Namen angelegt, lösch sie vorher, sonst laufen
+  die Tests doppelt.
 - **Workflow scheitert in `run_ingest` mit `PERMISSION_DENIED`:** `workflow-sa` fehlt Cloud
   Run Invoker auf `ingest-alerts`, das Recht gilt pro Job. Oder es ist gerade erst vergeben,
   dann eine Minute warten und `gcloud workflows run alerts-pipeline --location=europe-west6`.

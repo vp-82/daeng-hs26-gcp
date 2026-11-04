@@ -8,10 +8,11 @@ Nur neue Dateien, nichts aus Lektion 2 wird überschrieben. Darum eigene Dateina
 Tests (`sources_alerts.yml`, `schema_alerts.yml`) und Variablen mit Standardwert im SQL statt in
 `dbt_project.yml`.
 
-Hinein ins eigene Projekt, falls die eigene Fassung nicht baut:
+Hinein ins eigene Projekt, falls die eigene Fassung nicht baut (nur die drei Ordner, damit
+`transform/README.md` und der Rest aus Lektion 2 unberührt bleiben):
 
 ```bash
-cp -r referenz/transform-alerts/. transform/
+cp -R referenz/transform-alerts/models referenz/transform-alerts/seeds referenz/transform-alerts/tests transform/
 ```
 
 Dateien:

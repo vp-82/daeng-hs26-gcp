@@ -28,13 +28,15 @@ WITH candidates AS (
     SELECT a.alert_id, a.title, a.text
     FROM {{ ref('stg_alerts') }} AS a
     WHERE a.message_type = 2
-        -- Vorauswahl: der Bahnhofname als ganzes Wort in Titel oder Text.
-        AND EXISTS (
-            SELECT 1
-            FROM {{ ref('vbl_bahnhoefe') }} AS b
-            WHERE REGEXP_CONTAINS(
-                CONCAT(a.title, ' ', a.text),
-                CONCAT(r'(^|[^\p{L}])', b.bahnhof, r'([^\p{L}]|$)')
+        -- Vorauswahl: ein Bahnhofname aus der Seed-Tabelle als ganzes Wort in Titel oder Text.
+        -- Alle Namen in einem Ausdruck (Luzern|Emmenbrücke|...), weil BigQuery in einem EXISTS
+        -- keine Regex-Bedingung erlaubt.
+        AND REGEXP_CONTAINS(
+            CONCAT(a.title, ' ', a.text),
+            CONCAT(
+                r'(^|[^\p{L}])(',
+                (SELECT STRING_AGG(b.bahnhof, '|') FROM {{ ref('vbl_bahnhoefe') }} AS b),
+                r')([^\p{L}]|$)'
             )
         )
     {% if is_incremental() %}
