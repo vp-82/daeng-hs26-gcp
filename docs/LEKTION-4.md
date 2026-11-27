@@ -112,12 +112,13 @@ der Console nachschauen.
 drei Minuten Ingest, zwei Minuten Scan, dann schliesst die Schranke. Darum beginnt der erste
 Vorfall, bevor der Agent da ist. Du schaust ihn dir in Schritt 5 an.
 
-Die Geschichte dazu: Ein Kollege findet, eine Million Zeilen pro Version sei als Untergrenze
-zu lax. Normal sind 2.6 Millionen, also setzt er die Schwelle auf drei Millionen, "damit wir
-es merken, wenn etwas fehlt". Dass damit jede normale Lieferung durchfällt, merkt er nicht,
-weil der Scan erst beim nächsten Lauf der Pipeline läuft. Du spielst den Kollegen, mit einer
-Kopie der Regeldatei in `/tmp`. Die Datei im Repo bleibt, wie sie ist, du brauchst sie in
-Schritt 6 zum Zurückstellen.
+Die Geschichte dazu: Ein Kollege findet, eine Million Zeilen sei als Untergrenze zu lax. In
+der Console zeigt `raw.trips` gut fünf Millionen Zeilen, also setzt er die Schwelle auf drei
+Millionen, "immer noch mit Reserve, aber wir merken es, wenn etwas fehlt". Was er überlesen
+hat: Die Regel zählt pro Version, nicht pro Tabelle, und eine Version hat 2.6 Millionen.
+Dass damit jede Lieferung durchfällt, merkt er nicht, weil der Scan erst beim nächsten Lauf
+der Pipeline läuft. Du spielst den Kollegen, mit einer Kopie der Regeldatei in `/tmp`. Die
+Datei im Repo bleibt, wie sie ist, du brauchst sie in Schritt 6 zum Zurückstellen.
 
 Prompt:
 
@@ -144,10 +145,10 @@ gcloud workflows execute gtfs-pipeline --location=europe-west6
 Claude Code merkt vielleicht an, dass die Regel damit für alle Versionen scheitern wird,
 nicht nur für eine. Stimmt, und das ist später ein Hinweis für den Agenten.
 
-Console: [Dataplex → Data Quality](https://console.cloud.google.com/dataplex/govern/quality)
-→ `trips-quality` → Tab Regeln: `min-one-million-rows-per-version` zeigt im SQL `< 3000000`.
-[Workflows](https://console.cloud.google.com/workflows) → `gtfs-pipeline`: eine Execution
-ist aktiv, im Schritt `run_ingest`.
+Console: [BigQuery](https://console.cloud.google.com/bigquery) → `raw` → `trips` → Tab
+**Data Quality** → der Scan `trips-quality`: die Regel `min-one-million-rows-per-version`
+zeigt im SQL `< 3000000`. [Workflows](https://console.cloud.google.com/workflows) →
+`gtfs-pipeline`: eine Execution ist aktiv, im Schritt `run_ingest`.
 
 Checkpoint: Execution `ACTIVE`, Regel steht auf drei Millionen. Weiter mit Schritt 2, die
 Pipeline arbeitet derweil.
