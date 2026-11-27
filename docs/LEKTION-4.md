@@ -214,7 +214,9 @@ Was du siehst: eine Kategorie, eine Ursache in einem Satz, eine Massnahme. Welch
 hängt vom Lauf ab. Meist `Daten geändert` ("die Lieferung hatte weniger als eine Million
 Zeilen") oder `unklar`, manchmal `Regel zu streng`. Alle drei sind aus dem Text heraus
 vertretbar, und genau das ist der Punkt: Im Text steht, welche Regel gescheitert ist. Ob die
-Lieferung klein war oder die Regel gross, steht nicht im Text. Das steht in der
+Lieferung klein war oder die Regel gross, steht nicht im Text. Meist nimmt das Modell den
+Namen der Regel wörtlich, "min one million", und schliesst auf eine zu kleine Lieferung. Der
+Name sagt eine Million, die Regel sagt seit Schritt 1 drei. Das Modell kennt nur den Namen. Das steht in der
 Scan-Historie, im Audit-Log, in den Zeilenzahlen der Partitionen. Die Funktion hat den Text.
 Der Agent hat die Werkzeuge, um nachzuschauen.
 
