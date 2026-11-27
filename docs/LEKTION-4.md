@@ -229,7 +229,8 @@ Grund, warum es den Agenten braucht.
 
 ## 3. Was ein Agent ist
 
-**Warum.** Der Agent ist fertig geschrieben, zwei Dateien, du liest sie. Nicht, um sie zu
+**Warum.** Den Agenten erzeugst du heute nicht aus einer Spezifikation wie die dbt-Modelle
+in Lektion 2 und 3, er liegt fertig im Repo: zwei Dateien, die du liest. Nicht, um sie zu
 ändern, sondern um die vier Teile zu kennen, aus denen jeder Agent besteht, und um zu sehen,
 wo die Grenze steht, über die er nicht darf.
 
@@ -923,7 +924,7 @@ zusammensetzen muss. Das ist auch der Fall, der einen Menschen am längsten kost
 
 Wo das Modell entschieden hat: welche Werkzeuge es in welcher Reihenfolge aufruft, was als
 Fakt gilt und was als Schluss, welche der sechs Kategorien, welche Konfidenz, welcher
-Vorschlag. Das ist Lesen und Schliessen, und das kann es.
+Vorschlag. Das ist Lesen und Schlüsse ziehen, und das kann es.
 
 Wo das Modell nicht entschieden hat: welche Werkzeuge es gibt (`tools.py`), was die
 Werkzeuge zurückgeben und wie viel (die Obergrenzen), was es schreiben darf (nichts,

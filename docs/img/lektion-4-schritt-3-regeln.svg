@@ -1,17 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1044 280" width="1044" height="280" role="img" aria-labelledby="t d">
 <title id="t">Drei Regeln für Werkzeuge, oben in tools.py</title>
-<desc id="d">Feste Namen: das Modell wählt nur aus den Ressourcen der Pipeline. Knappe Antworten: Felder statt Rohtext und feste Obergrenzen, weil jede Antwort in jeden weiteren Modellaufruf mitwandert. Kein Absturz: Fehler kommen als Ergebnis zurück, damit das Modell anders weitersuchen kann.</desc>
+<desc id="d">Nur bekannte Ressourcen: das Modell wählt aus der Konfiguration des Jobs, es kann keine erfinden. Knappe Antworten: Felder statt Rohtext und feste Obergrenzen, weil jede Antwort in jeden weiteren Modellaufruf mitwandert. Kein Absturz: Fehler kommen als Ergebnis zurück, damit das Modell anders weitersuchen kann.</desc>
 <rect width="1044" height="280" fill="#ffffff"/>
 <rect x="16" y="16" width="1012" height="248" rx="6" fill="#ffffff" stroke="#d0d7de"/>
 <path d="M16 46 V22 a6 6 0 0 1 6 -6 H1022 a6 6 0 0 1 6 6 V46 Z" fill="#f6f8fa" stroke="#d0d7de"/>
 <text x="30" y="36" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="13.5" fill="#1f2328" text-anchor="start" font-weight="700">Drei Regeln für Werkzeuge, oben in tools.py</text>
 <rect x="30" y="66" width="318" height="196" rx="6" fill="#ffffff" stroke="#8c959f"/>
-<text x="189" y="90" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="13.5" fill="#1f2328" text-anchor="middle" font-weight="700">Feste Namen</text>
+<text x="189" y="90" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="13.5" fill="#1f2328" text-anchor="middle" font-weight="700">Nur bekannte Ressourcen</text>
 <text x="189" y="112" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">Projekt, Workflow, Scan und die</text>
-<text x="189" y="129" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">erlaubten Jobs kommen aus der</text>
-<text x="189" y="146" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">Umgebung. Das Modell wählt aus</text>
-<text x="189" y="163" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">dem, was die Pipeline hat, es</text>
-<text x="189" y="180" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">kann keine Ressource erfinden.</text>
+<text x="189" y="129" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">erlaubten Jobs stehen in der</text>
+<text x="189" y="146" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">Konfiguration des Jobs, nicht im</text>
+<text x="189" y="163" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">Modell. Es wählt aus dieser Liste</text>
+<text x="189" y="180" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">und kann keine Ressource erfinden.</text>
 <rect x="42" y="204" width="294" height="46" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
 <text x="189" y="223" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="11.5" fill="#1f2328" text-anchor="middle" font-weight="400">get_job("ingest-gtfs")  ✓</text>
 <text x="189" y="241" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="11.5" fill="#1f2328" text-anchor="middle" font-weight="400">get_job("prod-db")  ✗ unbekannt</text>

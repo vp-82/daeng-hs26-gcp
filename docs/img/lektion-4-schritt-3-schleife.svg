@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1044 506" width="1044" height="506" role="img" aria-labelledby="t d">
 <title id="t">Die Schleife des Agenten, und wo die Grenze steht</title>
-<desc id="d">Anweisung, Schema und Werkzeuge gehen ins Modell. Das Modell wählt ein Werkzeug, das Werkzeug liest und antwortet, die Antwort geht in den Prompt, das Modell entscheidet wieder, bis zu 30 Mal und höchstens 10 Minuten, bis das Schema gefüllt ist. Alles im gestrichelten Kasten darf nur lesen. Ausserhalb schreibt write_row(), das Programm, eine Zeile nach ops.incidents. Die Grenze steht zweimal: im Code und in IAM.</desc>
+<desc id="d">Das Modell liest und zieht Schlüsse. Anweisung, Schema und Werkzeuge gehen ins Modell. Das Modell wählt ein Werkzeug, das Werkzeug liest und antwortet, die Antwort geht in den Prompt, das Modell entscheidet wieder, bis zu 30 Mal und höchstens 10 Minuten, bis das Schema gefüllt ist. Alles im gestrichelten Kasten darf nur lesen. Ausserhalb schreibt write_row(), das Programm, eine Zeile nach ops.incidents. Die Grenze steht zweimal: im Code und in IAM.</desc>
 <rect width="1044" height="506" fill="#ffffff"/>
 <rect x="16" y="16" width="1012" height="474" rx="6" fill="#ffffff" stroke="#d0d7de"/>
 <path d="M16 46 V22 a6 6 0 0 1 6 -6 H1022 a6 6 0 0 1 6 6 V46 Z" fill="#f6f8fa" stroke="#d0d7de"/>
 <text x="30" y="36" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="13.5" fill="#1f2328" text-anchor="start" font-weight="700">Die Schleife des Agenten, und wo die Grenze steht</text>
 <rect x="30" y="66" width="700" height="382" rx="8" fill="#ffffff" stroke="#0969da" stroke-dasharray="6 5"/>
-<text x="44" y="86" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12.5" fill="#0969da" text-anchor="start" font-weight="700">Das Modell liest und schliesst. Alles hier drin darf nur lesen.</text>
+<text x="44" y="86" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12.5" fill="#0969da" text-anchor="start" font-weight="700">Das Modell liest und zieht Schlüsse. Alles hier drin darf nur lesen.</text>
 <rect x="44" y="104" width="210" height="70" rx="6" fill="#f6f8fa" stroke="#8c959f"/>
 <text x="149.0" y="123" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="700">INSTRUCTION</text>
 <text x="149.0" y="140" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">die Methode in fünf Schritten,</text>
@@ -63,5 +63,5 @@
 <text x="892" y="444" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">Die Grenze steht zweimal: im Code, in IAM.</text>
 <path d="M30 462 H1014" stroke="#d0d7de" stroke-width="1.5"/>
 <text x="30" y="484" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12.5" fill="#1f2328" text-anchor="start" font-weight="700">Die vier Teile jedes Agenten:</text>
-<text x="232" y="484" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="start" font-weight="400">Schema (Diagnose)  ·  Anweisung (INSTRUCTION)  ·  Werkzeuge (tools.py)  ·  Lauf (triage(), die Schleife, von ADK gestellt)</text>
+<text x="232" y="484" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="start" font-weight="400">Schema (Diagnose)  ·  Anweisung (INSTRUCTION)  ·  Werkzeuge (tools.py)  ·  Lauf (triage() startet die Schleife, ADK führt sie)</text>
 </svg>

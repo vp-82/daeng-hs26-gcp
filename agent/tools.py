@@ -5,8 +5,9 @@ Parameter, und entscheidet selbst, wann es sie aufruft. Darum sind die Docstring
 sagen genau, was zurückkommt: sie sind die Bedienungsanleitung für das Modell.
 
 Drei Regeln gelten für jedes Werkzeug hier:
-1. Feste Namen. Projekt, Region, Workflow, Scan und die erlaubten Jobs kommen aus der Umgebung.
-   Das Modell kann keine Ressource erfinden, es wählt nur aus dem, was die Pipeline hat.
+1. Nur bekannte Ressourcen. Projekt, Region, Workflow, Scan und die erlaubten Jobs stehen in der
+   Konfiguration des Jobs (Umgebungsvariablen), nicht im Modell. Das Modell wählt aus dieser
+   Liste, es kann keine Ressource erfinden.
 2. Knappe Antworten. Felder statt Rohtext, feste Obergrenzen. Jede Antwort wandert bei jedem
    weiteren Modellaufruf mit, was früh gelesen wird, geht zwanzigmal mit.
 3. Kein Absturz. Ein Fehler im Werkzeug kommt als Ergebnis zurück ("status": "ERROR"), nicht als

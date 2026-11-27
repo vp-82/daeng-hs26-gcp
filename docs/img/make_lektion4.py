@@ -52,9 +52,9 @@ def frame(h, title, desc, body):
 # Grafik 1: die vier Teile, die Schleife, die Grenze -------------------------------------------
 def schleife():
     b = []
-    # Grenze: das Modell liest und schliesst (gestrichelter Kasten)
+    # Grenze: das Modell liest und zieht Schlüsse (gestrichelter Kasten)
     b.append(f'<rect x="30" y="66" width="700" height="382" rx="8" fill="#ffffff" stroke="{BLUE}" stroke-dasharray="6 5"/>')
-    b.append(text(44, 86, "Das Modell liest und schliesst. Alles hier drin darf nur lesen.", 12.5, "start", 700, fill=BLUE))
+    b.append(text(44, 86, "Das Modell liest und zieht Schlüsse. Alles hier drin darf nur lesen.", 12.5, "start", 700, fill=BLUE))
     # Drei Eingaben links
     b.append(box(44, 104, 210, 70, "INSTRUCTION", ["die Methode in fünf Schritten,", "kein Vorfall, keine Ursache"]))
     b.append(box(44, 190, 210, 70, "Diagnose", ["das Schema: 6 Kategorien,", "Fakten getrennt von Schlüssen"]))
@@ -86,9 +86,9 @@ def schleife():
     # Vier Teile Legende unten
     b.append(f'<path d="M30 462 H1014" stroke="{LINE}" stroke-width="1.5"/>')
     b.append(text(30, 484, "Die vier Teile jedes Agenten:", 12.5, "start", 700))
-    b.append(text(232, 484, "Schema (Diagnose)  ·  Anweisung (INSTRUCTION)  ·  Werkzeuge (tools.py)  ·  Lauf (triage(), die Schleife, von ADK gestellt)", 12, "start"))
+    b.append(text(232, 484, "Schema (Diagnose)  ·  Anweisung (INSTRUCTION)  ·  Werkzeuge (tools.py)  ·  Lauf (triage() startet die Schleife, ADK führt sie)", 12, "start"))
     return frame(506, "Die Schleife des Agenten, und wo die Grenze steht",
-                 "Anweisung, Schema und Werkzeuge gehen ins Modell. Das Modell wählt ein Werkzeug, das Werkzeug liest und antwortet, die Antwort geht in den Prompt, das Modell entscheidet wieder, bis zu 30 Mal und höchstens 10 Minuten, bis das Schema gefüllt ist. Alles im gestrichelten Kasten darf nur lesen. Ausserhalb schreibt write_row(), das Programm, eine Zeile nach ops.incidents. Die Grenze steht zweimal: im Code und in IAM.",
+                 "Das Modell liest und zieht Schlüsse. Anweisung, Schema und Werkzeuge gehen ins Modell. Das Modell wählt ein Werkzeug, das Werkzeug liest und antwortet, die Antwort geht in den Prompt, das Modell entscheidet wieder, bis zu 30 Mal und höchstens 10 Minuten, bis das Schema gefüllt ist. Alles im gestrichelten Kasten darf nur lesen. Ausserhalb schreibt write_row(), das Programm, eine Zeile nach ops.incidents. Die Grenze steht zweimal: im Code und in IAM.",
                  "\n".join(b))
 
 
@@ -96,7 +96,7 @@ def schleife():
 def regeln():
     b = []
     cols = [
-        ("Feste Namen", ["Projekt, Workflow, Scan und die", "erlaubten Jobs kommen aus der", "Umgebung. Das Modell wählt aus", "dem, was die Pipeline hat, es", "kann keine Ressource erfinden."],
+        ("Nur bekannte Ressourcen", ["Projekt, Workflow, Scan und die", "erlaubten Jobs stehen in der", "Konfiguration des Jobs, nicht im", "Modell. Es wählt aus dieser Liste", "und kann keine Ressource erfinden."],
          'get_job("ingest-gtfs")  ✓', 'get_job("prod-db")  ✗ unbekannt'),
         ("Knappe Antworten", ["Felder statt Rohtext, feste", "Obergrenzen: 5 Executions,", "40 Logzeilen, 20 Audit-Einträge.", "Jede Antwort wandert in jeden", "weiteren Modellaufruf mit."],
          "Aufruf 1 trägt 5 KB, Aufruf 8 trägt 40 KB:", "jede Antwort zählt jedes Mal neu"),
@@ -114,7 +114,7 @@ def regeln():
         b.append(text(x + 159, 241, ex2, 11.5, "middle", 400, mono=True))
         x += 333
     return frame(280, "Drei Regeln für Werkzeuge, oben in tools.py",
-                 "Feste Namen: das Modell wählt nur aus den Ressourcen der Pipeline. Knappe Antworten: Felder statt Rohtext und feste Obergrenzen, weil jede Antwort in jeden weiteren Modellaufruf mitwandert. Kein Absturz: Fehler kommen als Ergebnis zurück, damit das Modell anders weitersuchen kann.",
+                 "Nur bekannte Ressourcen: das Modell wählt aus der Konfiguration des Jobs, es kann keine erfinden. Knappe Antworten: Felder statt Rohtext und feste Obergrenzen, weil jede Antwort in jeden weiteren Modellaufruf mitwandert. Kein Absturz: Fehler kommen als Ergebnis zurück, damit das Modell anders weitersuchen kann.",
                  "\n".join(b))
 
 
