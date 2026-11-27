@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1044 506" width="1044" height="506" role="img" aria-labelledby="t d">
+<title id="t">Die Schleife des Agenten, und wo die Grenze steht</title>
+<desc id="d">Anweisung, Schema und Werkzeuge gehen ins Modell. Das Modell wählt ein Werkzeug, das Werkzeug liest und antwortet, die Antwort geht in den Prompt, das Modell entscheidet wieder, bis zu 30 Mal und höchstens 10 Minuten, bis das Schema gefüllt ist. Alles im gestrichelten Kasten darf nur lesen. Ausserhalb schreibt write_row(), das Programm, eine Zeile nach ops.incidents. Die Grenze steht zweimal: im Code und in IAM.</desc>
+<rect width="1044" height="506" fill="#ffffff"/>
+<rect x="16" y="16" width="1012" height="474" rx="6" fill="#ffffff" stroke="#d0d7de"/>
+<path d="M16 46 V22 a6 6 0 0 1 6 -6 H1022 a6 6 0 0 1 6 6 V46 Z" fill="#f6f8fa" stroke="#d0d7de"/>
+<text x="30" y="36" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="13.5" fill="#1f2328" text-anchor="start" font-weight="700">Die Schleife des Agenten, und wo die Grenze steht</text>
+<rect x="30" y="66" width="700" height="382" rx="8" fill="#ffffff" stroke="#0969da" stroke-dasharray="6 5"/>
+<text x="44" y="86" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12.5" fill="#0969da" text-anchor="start" font-weight="700">Das Modell liest und schliesst. Alles hier drin darf nur lesen.</text>
+<rect x="44" y="104" width="210" height="70" rx="6" fill="#f6f8fa" stroke="#8c959f"/>
+<text x="149.0" y="123" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="700">INSTRUCTION</text>
+<text x="149.0" y="140" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">die Methode in fünf Schritten,</text>
+<text x="149.0" y="157" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">kein Vorfall, keine Ursache</text>
+<rect x="44" y="190" width="210" height="70" rx="6" fill="#f6f8fa" stroke="#8c959f"/>
+<text x="149.0" y="209" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="700">Diagnose</text>
+<text x="149.0" y="226" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">das Schema: 6 Kategorien,</text>
+<text x="149.0" y="243" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">Fakten getrennt von Schlüssen</text>
+<rect x="44" y="276" width="210" height="70" rx="6" fill="#f6f8fa" stroke="#8c959f"/>
+<text x="149.0" y="295" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="700">tools.py</text>
+<text x="149.0" y="312" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">zehn Werkzeuge + BigQuery,</text>
+<text x="149.0" y="329" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">Docstrings als Anleitung</text>
+<text x="149" y="376" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">+ ein Satz: "Execution X ist gescheitert"</text>
+<rect x="330" y="190" width="170" height="70" rx="6" fill="#ddf4ff" stroke="#0969da"/>
+<text x="415.0" y="209" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="700">Modell</text>
+<text x="415.0" y="226" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">gemini-3.8-flash</text>
+<text x="415.0" y="243" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">wählt das nächste Werkzeug</text>
+<path d="M254 139 L328 225" stroke="#8c959f" stroke-width="2.5"/>
+<path d="M328 225 L318.1 220.1 L324.6 214.5 z" fill="#8c959f"/>
+<path d="M254 225 L328 225" stroke="#8c959f" stroke-width="2.5"/>
+<path d="M328 225 L317.9 229.3 L317.9 220.7 z" fill="#8c959f"/>
+<path d="M254 311 L328 225" stroke="#8c959f" stroke-width="2.5"/>
+<path d="M328 225 L324.6 235.5 L318.1 229.9 z" fill="#8c959f"/>
+<rect x="560" y="190" width="150" height="70" rx="6" fill="#f6f8fa" stroke="#8c959f"/>
+<text x="635.0" y="209" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="700">Werkzeug</text>
+<text x="635.0" y="226" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">läuft, liest, antwortet</text>
+<text x="635.0" y="243" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">knapp und fest begrenzt</text>
+<path d="M500 212 L558 212" stroke="#8c959f" stroke-width="2.5"/>
+<path d="M558 212 L547.9 216.3 L547.9 207.7 z" fill="#8c959f"/>
+<text x="529" y="200" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">ruft auf</text>
+<path d="M558 240 L500 240" stroke="#8c959f" stroke-width="2.5"/>
+<path d="M500 240 L510.1 235.7 L510.1 244.3 z" fill="#8c959f"/>
+<text x="529" y="290" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">Antwort in den Prompt</text>
+<text x="529" y="272" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="11.5" fill="#8c959f" text-anchor="middle" font-weight="400">bis zu 30 Mal, höchstens 10 Minuten</text>
+<path d="M635 190 V150 H415 V188" fill="none" stroke="#8c959f" stroke-width="2.5"/>
+<path d="M415 190 l-6 -10 h12 z" fill="#8c959f"/>
+<text x="525" y="142" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">wieder entscheiden</text>
+<path d="M415 262 L415 318" stroke="#8c959f" stroke-width="2.5"/>
+<path d="M415 318 L410.7 307.9 L419.3 307.9 z" fill="#8c959f"/>
+<rect x="300" y="320" width="230" height="68" rx="6" fill="#f6f8fa" stroke="#8c959f"/>
+<text x="415.0" y="339" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="700">Diagnose gefüllt</text>
+<text x="415.0" y="356" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">Kategorie, Fakten, Schlüsse,</text>
+<text x="415.0" y="373" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">Ursache, Vorschlag, Konfidenz</text>
+<text x="415" y="414" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">Das Modell hat kein Werkzeug, das schreibt, deployt, startet oder löscht.</text>
+<text x="415" y="432" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">Das BigQuery-Werkzeug hat die Schreibsperre, der Service-Account kein Schreibrecht auf raw.</text>
+<path d="M530 354 L770 354" stroke="#8c959f" stroke-width="2.5"/>
+<path d="M770 354 L759.9 358.3 L759.9 349.7 z" fill="#8c959f"/>
+<rect x="772" y="308" width="240" height="92" rx="6" fill="#f6f8fa" stroke="#1f2328"/>
+<text x="892.0" y="327" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="700">write_row()</text>
+<text x="892.0" y="344" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">das Programm, nicht das Modell,</text>
+<text x="892.0" y="361" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">schreibt eine Zeile nach</text>
+<text x="892.0" y="378" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">ops.incidents, Status offen</text>
+<text x="892" y="426" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="700">Schreibrecht nur hier, in IAM.</text>
+<text x="892" y="444" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="middle" font-weight="400">Die Grenze steht zweimal: im Code, in IAM.</text>
+<path d="M30 462 H1014" stroke="#d0d7de" stroke-width="1.5"/>
+<text x="30" y="484" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12.5" fill="#1f2328" text-anchor="start" font-weight="700">Die vier Teile jedes Agenten:</text>
+<text x="232" y="484" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" fill="#1f2328" text-anchor="start" font-weight="400">Schema (Diagnose)  ·  Anweisung (INSTRUCTION)  ·  Werkzeuge (tools.py)  ·  Lauf (triage(), die Schleife, von ADK gestellt)</text>
+</svg>

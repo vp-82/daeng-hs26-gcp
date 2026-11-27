@@ -233,40 +233,20 @@ Grund, warum es den Agenten braucht.
 ändern, sondern um die vier Teile zu kennen, aus denen jeder Agent besteht, und um zu sehen,
 wo die Grenze steht, über die er nicht darf.
 
-**Die vier Teile.** Erstens das Schema, die Klasse `Diagnose`: genau diese Felder, genau
-diese Werte. Eine Kategorie aus sechs, die Fakten getrennt von den Schlüssen, die Konfidenz
-darf nur `hoch` sein, wenn die Ursache gelesen wurde und nicht erschlossen. Das Modell muss
-das Schema ausfüllen, es gibt kein Freitextfeld, in dem es ausweichen könnte. Zweitens die
-Anweisung, `INSTRUCTION`: wie ein Mensch bei einem Vorfall vorgeht, in fünf Schritten.
-Execution lesen, den gescheiterten Schritt lesen, mit der Historie vergleichen, nach
-Änderungen der letzten Tage suchen, die einfachste Erklärung wählen. Nichts darin nennt
-einen bestimmten Vorfall. Die Anweisung beschreibt die Methode, nicht die Fälle von heute.
-Drittens die Werkzeuge in `tools.py`: zehn Python-Funktionen. Das Modell sieht ihren Namen,
-den Docstring und die Parameter, und entscheidet selbst, wann es welche aufruft. Darum sind
-die Docstrings auf Deutsch und sagen genau, was zurückkommt, sie sind die
-Bedienungsanleitung für das Modell. Viertens der Lauf: `triage()` baut den Agenten, gibt ihm
-einen Satz ("Execution soundso ist gescheitert") und lässt ihn arbeiten, bis das Schema
-gefüllt ist.
+![Die Schleife des Agenten, und wo die Grenze steht](img/lektion-4-schritt-3-schleife.svg)
 
-**Was ADK dabei tut.** Die Schleife, in der das Modell ein Werkzeug wählt, das Werkzeug
-läuft, das Ergebnis zurück in den Prompt wandert, und das Modell wieder wählt, schreibt
-niemand mehr von Hand. Googles Agent Development Kit stellt sie: `LlmAgent` bekommt Modell,
-Anweisung, Werkzeuge und Schema, `InMemoryRunner` lässt ihn laufen. Das BigQuery-Werkzeug
-kommt gleich mit, `BigQueryToolset`, mit Schreibsperre (`WriteMode.BLOCKED`) und einer
-Obergrenze von einem Gigabyte pro Abfrage. Der Agent kann also SQL schreiben, aber kein
-`DELETE`, und keine Abfrage, die teuer wird.
+Die Schleife schreibt niemand mehr von Hand, Googles Agent Development Kit stellt sie:
+`LlmAgent` bekommt Modell, Anweisung, Werkzeuge und Schema, `InMemoryRunner` lässt ihn
+laufen. Das BigQuery-Werkzeug kommt von ADK mit, mit Schreibsperre (`WriteMode.BLOCKED`) und
+einer Obergrenze von einem Gigabyte pro Abfrage: SQL ja, `DELETE` nein, teure Abfragen nein.
 
-**Drei Regeln für Werkzeuge**, oben in `tools.py`: Feste Namen, das Modell wählt aus dem,
-was die Pipeline hat, es kann keine Ressource erfinden. Knappe Antworten, Felder statt
-Rohtext, feste Obergrenzen, denn jede Antwort wandert bei jedem weiteren Modellaufruf mit.
-Und kein Absturz: ein Fehler im Werkzeug kommt als Ergebnis zurück, nicht als Exception,
-sonst bricht der ganze Lauf ab, und das Modell kann nicht anders weitersuchen. Das macht der
-`safe`-Wrapper.
+Zwei Dinge in der Grafik sind die Lektion. Die Anweisung beschreibt die Methode, wie ein
+Mensch bei einem Vorfall vorgeht, nichts darin nennt einen der Vorfälle von heute. Und die
+Docstrings der Werkzeuge sind auf Deutsch und sagen genau, was zurückkommt, weil das Modell
+sie liest: Sie sind seine Bedienungsanleitung, und das Modell entscheidet selbst, wann es
+welches aufruft.
 
-**Die Grenze.** Kein Werkzeug schreibt, deployt, startet oder löscht. Die eine Zeile in
-`ops.incidents` schreibt `write_row()`, nach dem Lauf des Modells, aus dem Programm heraus.
-Das Modell hat dafür kein Werkzeug, und der Service-Account des Jobs hat ausser auf `ops`
-nirgends Schreibrecht. Beides zusammen ist die Grenze: einmal im Code, einmal in IAM.
+![Drei Regeln für Werkzeuge](img/lektion-4-schritt-3-regeln.svg)
 
 Prompt:
 
@@ -278,21 +258,17 @@ Zeile in ops.incidents schreibt,
 und was MAX_LLM_CALLS begrenzt. Ändere nichts.
 ```
 
-Was Claude Code nennen sollte: Das Schema erzwingt eine von sechs Kategorien und die
-Trennung von Fakten und Schlüssen. Die Anweisung beschreibt ein Vorgehen und zwei
-Standardabfragen, aber keinen Vorfall. Die Werkzeuge lesen Workflow, Jobs, Logs, Audit-Log,
-Scan, Builds und Load-Jobs, keines ändert etwas. Die Zeile schreibt das Programm, nicht das
-Modell. `MAX_LLM_CALLS` begrenzt die Anzahl Modellaufrufe pro Diagnose auf 30, gegen eine
-Schleife, nicht gegen Kosten. Die Kosten entstehen durch die Werkzeugantworten im Prompt,
-und die begrenzen die Werkzeuge selbst. Daneben gibt es ein Zeitbudget von zehn Minuten:
-Läuft es ab, schreibt der Job trotzdem eine Zeile, Kategorie `unklar`, mit dem, was er bis
-dahin gelesen hat. Der Agent endet nie ohne Zeile, das ist die Regel für alles, was
-unbeaufsichtigt läuft.
+Was Claude Code nennen sollte: sechs Kategorien, Fakten getrennt von Schlüssen. Ein
+Vorgehen und zwei Standardabfragen, kein Vorfall. Werkzeuge für Workflow, Jobs, Logs,
+Audit-Log, Scan, Builds und Load-Jobs, keines ändert etwas. Die Zeile schreibt das Programm.
+`MAX_LLM_CALLS` begrenzt die Modellaufrufe auf 30, gegen eine Schleife, nicht gegen Kosten,
+die begrenzen die Werkzeuge. Dazu ein Zeitbudget von zehn Minuten: Läuft es ab, schreibt der
+Job trotzdem eine Zeile, Kategorie `unklar`, mit dem, was er bis dahin gelesen hat. Der
+Agent endet nie ohne Zeile.
 
-Was `tool_calls` ist: Der Agent schreibt zu jeder Diagnose mit, welche Werkzeuge er in
-welcher Reihenfolge aufgerufen hat, mit Argumenten und dem Anfang jeder Antwort. Das ist der
-Nachweis. Jeder Satz in der Diagnose lässt sich auf eine Antwort zurückführen, die der Agent
-gelesen hat.
+Und `tool_calls`: Zu jeder Diagnose schreibt der Agent mit, welche Werkzeuge er in welcher
+Reihenfolge aufgerufen hat, mit Argumenten und dem Anfang jeder Antwort. Jeder Satz der
+Diagnose lässt sich auf etwas zurückführen, das er gelesen hat. Das ist der Nachweis.
 
 Console: noch nichts.
 
